@@ -44,7 +44,7 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Mehran Granfar" }],
   creator: "Mehran Granfar",
-  publisher: "Mic Press, Inc.",
+  publisher: "Mic Press, LLC. (Mic Press - New York)",
   robots: {
     index: true,
     follow: true,
@@ -127,9 +127,9 @@ export default function RootLayout({
               ],
               "publisher": {
                 "@type": "Organization",
-                "name": "Mic Press, Inc.",
+                "name": "Mic Press, LLC. (Mic Press - New York)",
                 "url": "https://micpress.com",
-                "legalName": "Mic Press, Inc."
+                "legalName": "Mic Press, LLC. (Mic Press - New York)"
               },
               "inLanguage": "en",
               "genre": ["Business", "Technology", "Economics"],

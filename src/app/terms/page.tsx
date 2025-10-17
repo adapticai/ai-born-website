@@ -36,35 +36,35 @@ export default function TermsPage() {
               3. Content & Intellectual Property
             </h2>
             <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-6">
-              All content on this website, including text, graphics, logos, images, and software, is the property of Mic Press, Inc. or its content suppliers and is protected by international copyright laws. The book "AI-Born" and all related materials are protected by copyright and other intellectual property rights.
+              All content on this website, including text, graphics, logos, images, and software, is the property of Mic Press, LLC. (Mic Press - New York) or its content suppliers and is protected by international copyright laws. The book "AI-Born" and all related materials are protected by copyright and other intellectual property rights.
             </p>
 
             <h2 className="font-outfit text-3xl font-bold tracking-tight text-black dark:text-white mt-12 mb-6">
               4. Pre-Orders & Purchases
             </h2>
             <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-6">
-              Pre-orders placed through third-party retailers are subject to those retailers' terms and conditions. Mic Press, Inc. is not responsible for fulfillment, refunds, or customer service for purchases made through external retailers.
+              Pre-orders placed through third-party retailers are subject to those retailers' terms and conditions. Mic Press, LLC. (Mic Press - New York) is not responsible for fulfillment, refunds, or customer service for purchases made through external retailers.
             </p>
 
             <h2 className="font-outfit text-3xl font-bold tracking-tight text-black dark:text-white mt-12 mb-6">
               5. Email Communications
             </h2>
             <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-6">
-              By providing your email address, you consent to receive email communications from Mic Press, Inc. regarding book updates, launches, and related content. You may unsubscribe at any time via the link provided in each email.
+              By providing your email address, you consent to receive email communications from Mic Press, LLC. (Mic Press - New York) regarding book updates, launches, and related content. You may unsubscribe at any time via the link provided in each email.
             </p>
 
             <h2 className="font-outfit text-3xl font-bold tracking-tight text-black dark:text-white mt-12 mb-6">
               6. Disclaimer
             </h2>
             <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-6">
-              The materials on ai-born.org are provided on an 'as is' basis. Mic Press, Inc. makes no warranties, expressed or implied, and hereby disclaims and negates all other warranties including, without limitation, implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights.
+              The materials on ai-born.org are provided on an 'as is' basis. Mic Press, LLC. (Mic Press - New York) makes no warranties, expressed or implied, and hereby disclaims and negates all other warranties including, without limitation, implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights.
             </p>
 
             <h2 className="font-outfit text-3xl font-bold tracking-tight text-black dark:text-white mt-12 mb-6">
               7. Limitations
             </h2>
             <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-6">
-              In no event shall Mic Press, Inc. or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials on ai-born.org.
+              In no event shall Mic Press, LLC. (Mic Press - New York) or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials on ai-born.org.
             </p>
 
             <h2 className="font-outfit text-3xl font-bold tracking-tight text-black dark:text-white mt-12 mb-6">
@@ -78,7 +78,7 @@ export default function TermsPage() {
               9. Changes to Terms
             </h2>
             <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-6">
-              Mic Press, Inc. may revise these terms of service at any time without notice. By using this website, you are agreeing to be bound by the then-current version of these terms of service.
+              Mic Press, LLC. (Mic Press - New York) may revise these terms of service at any time without notice. By using this website, you are agreeing to be bound by the then-current version of these terms of service.
             </p>
 
             <h2 className="font-outfit text-3xl font-bold tracking-tight text-black dark:text-white mt-12 mb-6">
