@@ -282,7 +282,7 @@ export function BookFooter() {
             {/* Copyright */}
             <div className="text-center">
               <p className="font-inter text-sm text-slate-500 dark:text-slate-600">
-                © 2025 Mic Press, LLC. (Mic Press - New York). All rights reserved.
+                © 2025 Mic Press, LLC. All rights reserved.
                 <br />
                 <span className="text-xs">
                   By permission of the author, Mehran Granfar.

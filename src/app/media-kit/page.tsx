@@ -203,7 +203,7 @@ export default function MediaKitPage() {
                       Publisher
                     </p>
                     <p className="font-inter text-slate-700 dark:text-slate-300">
-                      Mic Press, LLC. (Mic Press - New York)
+                      Mic Press, LLC.
                       <br />
                       <a
                         href="https://micpress.com"
