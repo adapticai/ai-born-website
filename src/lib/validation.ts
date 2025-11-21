@@ -114,8 +114,24 @@ export const NewsletterSubscribeSchema = z.object({
   email: z
     .string()
     .min(1, 'Email is required')
-    .email('Please enter a valid email address'),
-  source: z.string().optional(),
+    .email('Please enter a valid email address')
+    .transform((email) => email.toLowerCase().trim()),
+  name: z.string().optional().or(z.literal('')),
+  source: z
+    .enum(['hero', 'footer', 'excerpt', 'bonus', 'blog', 'popup', 'other'])
+    .default('other'),
+  interests: z
+    .array(
+      z.enum([
+        'ai-native-org',
+        'governance',
+        'agent-architecture',
+        'defensibility',
+        'launch-updates',
+        'speaking-events',
+      ])
+    )
+    .default([]),
   honeypot: z.string().max(0, 'Invalid submission').optional(),
 });
 
@@ -140,6 +156,22 @@ export const ContactFormSchema = z.object({
 });
 
 export type ContactFormInput = z.infer<typeof ContactFormSchema>;
+
+// ============================================================================
+// VIP Code Redemption Schema
+// ============================================================================
+
+export const VIPCodeRedemptionSchema = z.object({
+  code: z
+    .string()
+    .min(1, 'VIP code is required')
+    .length(6, 'VIP code must be exactly 6 characters')
+    .regex(/^[A-Z0-9]{6}$/, 'VIP code must contain only uppercase letters and numbers')
+    .transform((val) => val.toUpperCase()),
+  honeypot: z.string().max(0, 'Invalid submission').optional(),
+});
+
+export type VIPCodeRedemptionInput = z.infer<typeof VIPCodeRedemptionSchema>;
 
 // ============================================================================
 // Validation Helpers

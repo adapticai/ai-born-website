@@ -73,16 +73,24 @@ export function BookMediaPress() {
     // Track analytics
     window.dataLayer?.push({
       event: "presskit_download",
-      asset_type: "complete_kit",
+      asset_type: "full-kit",
     });
     // TODO: Implement ZIP generation and download
     console.log("Download complete press kit");
   };
 
   const handleDownloadAsset = (asset: string) => {
+    // Map asset titles to analytics asset types
+    const assetTypeMap: Record<string, "synopsis" | "press-release" | "covers" | "headshots" | "full-kit"> = {
+      "One-Page Synopsis": "synopsis",
+      "Press Release": "press-release",
+      "Cover Art (High-Res)": "covers",
+      "Author Headshots": "headshots",
+    };
+
     window.dataLayer?.push({
       event: "presskit_download",
-      asset_type: asset,
+      asset_type: assetTypeMap[asset] || "synopsis",
     });
     // TODO: Implement individual asset download
     console.log(`Download asset: ${asset}`);
@@ -109,7 +117,7 @@ export function BookMediaPress() {
             onClick={handleDownloadAll}
             eventData={{
               event: "presskit_download",
-              asset_type: "complete_kit",
+              asset_type: "full-kit",
             }}
             className="rounded-none bg-black dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-slate-200"
           >
@@ -121,9 +129,6 @@ export function BookMediaPress() {
             variant="outline"
             onClick={() => (window.location.href = "mailto:press@micpress.com")}
             className="rounded-none border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black"
-            eventData={{
-              event: "media_email_click",
-            }}
           >
             <Mail className="w-5 h-5 mr-2" />
             Email Press Team

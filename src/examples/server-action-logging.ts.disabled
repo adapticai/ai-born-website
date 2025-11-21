@@ -1,0 +1,278 @@
+/**
+ * Example Server Actions with logging
+ *
+ * Demonstrates:
+ * - Server action logging wrapper
+ * - Form submission logging
+ * - Error handling and logging
+ * - Analytics event logging
+ */
+
+'use server';
+
+import { withServerActionLogging } from '@/middleware/logging';
+import { logger } from '@/lib/logger';
+import { z } from 'zod';
+
+// ============================================================================
+// Email Capture Form Submission
+// ============================================================================
+
+const EmailCaptureSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  name: z.string().optional(),
+  source: z.string().optional(),
+});
+
+export const submitEmailCapture = withServerActionLogging(
+  'submitEmailCapture',
+  async (formData: FormData) => {
+    const log = logger.child({ action: 'email-capture' });
+
+    try {
+      // Parse and validate
+      const data = EmailCaptureSchema.parse({
+        email: formData.get('email'),
+        name: formData.get('name'),
+        source: formData.get('source'),
+      });
+
+      log.info({ source: data.source }, 'Email capture submission received');
+
+      // Log analytics event
+      logger.analytics({
+        event: 'lead_capture_submit',
+        properties: {
+          source: data.source || 'unknown',
+          hasName: !!data.name,
+        },
+      });
+
+      // Simulate email service call
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      log.info({ source: data.source }, 'Email captured successfully');
+
+      return {
+        success: true,
+        message: 'Thank you for signing up!',
+      };
+
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        log.warn({ errors: error.errors }, 'Validation failed');
+
+        return {
+          success: false,
+          error: 'Invalid form data',
+          details: error.errors,
+        };
+      }
+
+      log.error({ err: error }, 'Email capture failed');
+
+      return {
+        success: false,
+        error: 'Failed to process submission',
+      };
+    }
+  }
+);
+
+// ============================================================================
+// Pre-order Bonus Claim
+// ============================================================================
+
+const BonusClaimSchema = z.object({
+  email: z.string().email(),
+  orderId: z.string().min(1),
+  retailer: z.string().min(1),
+});
+
+export const submitBonusClaim = withServerActionLogging(
+  'submitBonusClaim',
+  async (formData: FormData) => {
+    const log = logger.child({ action: 'bonus-claim' });
+
+    try {
+      const data = BonusClaimSchema.parse({
+        email: formData.get('email'),
+        orderId: formData.get('orderId'),
+        retailer: formData.get('retailer'),
+      });
+
+      log.info(
+        {
+          retailer: data.retailer,
+          orderIdHash: hashOrderId(data.orderId),
+        },
+        'Bonus claim submission received'
+      );
+
+      // Verify order (simulated)
+      const isValid = await verifyOrder(data.orderId, data.retailer);
+
+      if (!isValid) {
+        log.warn(
+          {
+            retailer: data.retailer,
+            orderIdHash: hashOrderId(data.orderId),
+          },
+          'Order verification failed'
+        );
+
+        return {
+          success: false,
+          error: 'Could not verify order. Please check your order ID.',
+        };
+      }
+
+      // Log conversion
+      logger.analytics({
+        event: 'bonus_claim_submit',
+        properties: {
+          retailer: data.retailer,
+        },
+      });
+
+      log.info({ retailer: data.retailer }, 'Bonus claim successful');
+
+      return {
+        success: true,
+        message: 'Your bonus pack will be emailed within 24 hours.',
+      };
+
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        log.warn({ errors: error.errors }, 'Validation failed');
+
+        return {
+          success: false,
+          error: 'Invalid form data',
+          details: error.errors,
+        };
+      }
+
+      log.error({ err: error }, 'Bonus claim processing failed');
+
+      return {
+        success: false,
+        error: 'Failed to process claim',
+      };
+    }
+  }
+);
+
+// ============================================================================
+// Media Request
+// ============================================================================
+
+const MediaRequestSchema = z.object({
+  name: z.string().min(1),
+  email: z.string().email(),
+  outlet: z.string().min(1),
+  requestType: z.enum(['interview', 'review_copy', 'press_kit', 'other']),
+  message: z.string().optional(),
+});
+
+export const submitMediaRequest = withServerActionLogging(
+  'submitMediaRequest',
+  async (formData: FormData) => {
+    const log = logger.child({ action: 'media-request' });
+
+    try {
+      const data = MediaRequestSchema.parse({
+        name: formData.get('name'),
+        email: formData.get('email'),
+        outlet: formData.get('outlet'),
+        requestType: formData.get('requestType'),
+        message: formData.get('message'),
+      });
+
+      log.info(
+        {
+          requestType: data.requestType,
+          outlet: data.outlet,
+        },
+        'Media request received'
+      );
+
+      // Log analytics
+      logger.analytics({
+        event: 'media_request_submit',
+        properties: {
+          request_type: data.requestType,
+        },
+      });
+
+      // Send notification (simulated)
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      log.info(
+        {
+          requestType: data.requestType,
+          outlet: data.outlet,
+        },
+        'Media request submitted successfully'
+      );
+
+      return {
+        success: true,
+        message: 'Thank you! We will respond within 24 hours.',
+      };
+
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        log.warn({ errors: error.errors }, 'Validation failed');
+
+        return {
+          success: false,
+          error: 'Invalid form data',
+          details: error.errors,
+        };
+      }
+
+      log.error({ err: error }, 'Media request processing failed');
+
+      return {
+        success: false,
+        error: 'Failed to submit request',
+      };
+    }
+  }
+);
+
+// ============================================================================
+// Helper Functions
+// ============================================================================
+
+/**
+ * Hash order ID for logging (preserve privacy)
+ */
+function hashOrderId(orderId: string): string {
+  // Simple hash for demonstration
+  // In production, use proper crypto hash
+  return orderId.split('').reduce(
+    (hash, char) => ((hash << 5) - hash + char.charCodeAt(0)) | 0,
+    0
+  ).toString(36);
+}
+
+/**
+ * Verify order with retailer (simulated)
+ */
+async function verifyOrder(orderId: string, retailer: string): Promise<boolean> {
+  const log = logger.child({ function: 'verifyOrder' });
+
+  log.debug({ retailer, orderIdHash: hashOrderId(orderId) }, 'Verifying order');
+
+  // Simulate API call
+  await new Promise(resolve => setTimeout(resolve, 200));
+
+  // Simulate validation
+  const isValid = orderId.length > 5;
+
+  log.debug({ retailer, isValid }, 'Order verification complete');
+
+  return isValid;
+}

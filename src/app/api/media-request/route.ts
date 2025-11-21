@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 import {
   mediaRequestSchema,
@@ -15,6 +15,7 @@ import {
   containsSuspiciousContent,
 } from "@/lib/utils/sanitization";
 import { storeSubmission } from "@/lib/utils/storage";
+import { sendMediaRequestNotification } from "@/lib/email";
 
 // Rate limit configuration: 5 requests per hour per IP
 const RATE_LIMIT_CONFIG: RateLimitConfig = {
@@ -68,8 +69,8 @@ export async function POST(request: NextRequest) {
     // Get client IP for rate limiting
     const clientIp = getClientIp(request);
 
-    // Check rate limit
-    const rateLimitResult = checkRateLimit(
+    // Check rate limit (async with Upstash Redis)
+    const rateLimitResult = await checkRateLimit(
       `media-request:${clientIp}`,
       RATE_LIMIT_CONFIG
     );
@@ -157,6 +158,8 @@ export async function POST(request: NextRequest) {
       outlet: sanitizeText(data.outlet),
       requestType: data.requestType,
       message: sanitizeText(data.message),
+      phone: data.phone ? sanitizeText(data.phone) : undefined,
+      deadline: data.deadline,
     };
 
     // Check for suspicious content
@@ -179,36 +182,68 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Generate unique request ID
+    const requestId = `MR-${Date.now()}-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
+
     // Store submission in JSON file for tracking
     try {
-      await storeSubmission("media-requests.json", sanitizedData, clientIp);
+      await storeSubmission("media-requests.json", { ...sanitizedData, requestId }, clientIp);
     } catch (error) {
       console.error("[STORAGE ERROR] Failed to store media request:", error);
       // Continue even if storage fails
     }
 
-    // TODO: Email service integration
-    // For MVP: Log to console with structured format
+    // Send email notification to PR team
+    console.log(
+      `[MEDIA REQUEST] Sending notification to PR team for request ${requestId}`
+    );
+
+    try {
+      const emailResult = await sendMediaRequestNotification({
+        ...sanitizedData,
+        requestId,
+        phone: sanitizedData.phone,
+        deadline: sanitizedData.deadline,
+      });
+
+      if (!emailResult.success) {
+        console.error(
+          `[EMAIL ERROR] Failed to send PR notification for ${requestId}:`,
+          emailResult.error
+        );
+        // Don't fail the request if email fails - we still have the data stored
+        // TODO: Set up a retry queue or alert system for failed notifications
+      } else {
+        console.log(
+          `[EMAIL SUCCESS] PR notification sent for ${requestId} (Message ID: ${emailResult.messageId})`
+        );
+      }
+    } catch (error) {
+      console.error(
+        `[EMAIL EXCEPTION] Exception while sending PR notification for ${requestId}:`,
+        error
+      );
+      // Continue - the request data is stored, we can manually follow up
+    }
+
+    // Log structured data for monitoring
     console.log("=".repeat(80));
-    console.log("[MEDIA REQUEST RECEIVED]");
+    console.log("[MEDIA REQUEST PROCESSED]");
     console.log("=".repeat(80));
+    console.log(`Request ID: ${requestId}`);
     console.log(`Timestamp: ${new Date().toISOString()}`);
     console.log(`From IP: ${clientIp}`);
     console.log(`Name: ${sanitizedData.name}`);
     console.log(`Email: ${sanitizedData.email}`);
     console.log(`Outlet: ${sanitizedData.outlet}`);
     console.log(`Request Type: ${sanitizedData.requestType}`);
+    if (sanitizedData.phone) {
+      console.log(`Phone: ${sanitizedData.phone}`);
+    }
+    if (sanitizedData.deadline) {
+      console.log(`Deadline: ${sanitizedData.deadline}`);
+    }
     console.log(`Message:\n${sanitizedData.message}`);
-    console.log("=".repeat(80));
-    console.log(
-      "TODO: Integrate email service (SendGrid, Postmark, or Resend)"
-    );
-    console.log("TODO: Send to PR inbox (pr@adaptic.ai)");
-    console.log(
-      `TODO: Email subject: "Media Request: ${sanitizedData.requestType} from ${sanitizedData.outlet}"`
-    );
-    console.log("TODO: Consider CRM integration (HubSpot, Salesforce)");
-    console.log("TODO: Setup notification webhooks (Slack, Discord)");
     console.log("=".repeat(80));
 
     // TODO: Track analytics event
@@ -224,7 +259,7 @@ export async function POST(request: NextRequest) {
         message:
           "Thank you for your request. We will review it and get back to you within 24 hours.",
         data: {
-          requestId: `MR-${Date.now()}`,
+          requestId,
           requestType: sanitizedData.requestType,
         },
       },

@@ -1,24 +1,18 @@
 /**
- * Simple in-memory rate limiter
- * For production, consider using Redis or a distributed rate limiting solution
+ * Rate Limiter Utility (Wrapper for main ratelimit module)
+ *
+ * This module provides backward compatibility for routes using the old API.
+ * It wraps the new Upstash Redis rate limiting functionality.
+ *
+ * @deprecated Use @/lib/ratelimit directly for new code
  */
 
-interface RateLimitEntry {
-  count: number;
-  resetTime: number;
-}
-
-const rateLimitStore = new Map<string, RateLimitEntry>();
-
-// Clean up expired entries every 10 minutes
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, entry] of rateLimitStore.entries()) {
-    if (entry.resetTime < now) {
-      rateLimitStore.delete(key);
-    }
-  }
-}, 10 * 60 * 1000);
+import {
+  checkRateLimit as checkUpstashRateLimit,
+  getClientIP as getUpstashClientIP,
+  generalFormRateLimiter,
+  type RateLimitResult as UpstashRateLimitResult,
+} from '@/lib/ratelimit';
 
 export interface RateLimitConfig {
   maxRequests: number;
@@ -34,80 +28,47 @@ export interface RateLimitResult {
 
 /**
  * Check if a request should be rate limited
- * @param key - Unique identifier (typically IP address)
+ *
+ * This wraps the new Upstash rate limiter with backward compatible API.
+ *
+ * @param key - Unique identifier (typically IP address with prefix)
  * @param config - Rate limit configuration
  * @returns Rate limit result
+ *
+ * @deprecated Use checkRateLimit from @/lib/ratelimit directly
  */
-export function checkRateLimit(
+export async function checkRateLimit(
   key: string,
   config: RateLimitConfig
-): RateLimitResult {
-  const now = Date.now();
-  const entry = rateLimitStore.get(key);
+): Promise<RateLimitResult> {
+  // Use the general form rate limiter with the config as fallback
+  const result = await checkUpstashRateLimit(
+    key,
+    generalFormRateLimiter,
+    {
+      ...config,
+      prefix: 'ratelimit:legacy',
+    }
+  );
 
-  // No entry or expired entry - create new
-  if (!entry || entry.resetTime < now) {
-    const resetTime = now + config.windowMs;
-    rateLimitStore.set(key, { count: 1, resetTime });
-
-    return {
-      success: true,
-      limit: config.maxRequests,
-      remaining: config.maxRequests - 1,
-      reset: resetTime,
-    };
-  }
-
-  // Check if limit exceeded
-  if (entry.count >= config.maxRequests) {
-    return {
-      success: false,
-      limit: config.maxRequests,
-      remaining: 0,
-      reset: entry.resetTime,
-    };
-  }
-
-  // Increment counter
-  entry.count += 1;
-  rateLimitStore.set(key, entry);
+  // Convert Upstash result format to legacy format
+  // Upstash reset is in seconds from now, we need timestamp
+  const resetTimestamp = Date.now() + (result.reset * 1000);
 
   return {
-    success: true,
-    limit: config.maxRequests,
-    remaining: config.maxRequests - entry.count,
-    reset: entry.resetTime,
+    success: result.success,
+    limit: result.limit,
+    remaining: result.remaining,
+    reset: resetTimestamp,
   };
 }
 
 /**
  * Get client IP address from request headers
  * Handles various proxy headers (Vercel, Cloudflare, etc.)
+ *
+ * @deprecated Use getClientIP from @/lib/ratelimit directly
  */
 export function getClientIp(request: Request): string {
-  // Check common proxy headers
-  const forwardedFor = request.headers.get("x-forwarded-for");
-  if (forwardedFor) {
-    return forwardedFor.split(",")[0].trim();
-  }
-
-  const realIp = request.headers.get("x-real-ip");
-  if (realIp) {
-    return realIp.trim();
-  }
-
-  // Vercel-specific header
-  const vercelIp = request.headers.get("x-vercel-forwarded-for");
-  if (vercelIp) {
-    return vercelIp.split(",")[0].trim();
-  }
-
-  // Cloudflare
-  const cfConnectingIp = request.headers.get("cf-connecting-ip");
-  if (cfConnectingIp) {
-    return cfConnectingIp.trim();
-  }
-
-  // Fallback to a default if no IP found
-  return "unknown";
+  return getUpstashClientIP(request);
 }

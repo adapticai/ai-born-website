@@ -8,6 +8,14 @@ import { Container } from "@/components/ui/container";
 import { Heading } from "@/components/ui/heading";
 import { Section } from "@/components/ui/section";
 
+interface BookBulkOrdersProps {
+  user?: {
+    id: string;
+    email?: string | null;
+    name?: string | null;
+  } | null;
+}
+
 const benefits = [
   {
     icon: Package,
@@ -35,7 +43,7 @@ const benefits = [
   },
 ];
 
-export function BookBulkOrders() {
+export function BookBulkOrdersWithAuth({ user }: BookBulkOrdersProps) {
   return (
     <Section id="bulk-orders" className="bg-white dark:bg-black border-t border-slate-200 dark:border-slate-900">
       <Container className="py-24">
@@ -107,7 +115,7 @@ export function BookBulkOrders() {
                   Minimum order: 10 copies. We'll contact you within 24-48 hours.
                 </p>
               </div>
-              <BulkOrderForm />
+              <BulkOrderForm user={user} />
             </div>
           </motion.div>
         </div>
@@ -115,3 +123,6 @@ export function BookBulkOrders() {
     </Section>
   );
 }
+
+// Backwards-compatible export (no auth integration)
+export const BookBulkOrders = () => <BookBulkOrdersWithAuth user={null} />;

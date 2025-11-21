@@ -1,0 +1,138 @@
+AI-BORN: SUGGESTED INTERVIEW TOPICS
+
+Author: Mehran Granfar
+Book: AI-Born: The Machine Core, the Human Cortex, and the Next Economy of Being
+
+OVERVIEW
+
+Mehran Granfar is available for interviews on AI transformation, organisational design,
+autonomous agents, and the future of work. Below are suggested topics and talking points.
+
+---
+
+CORE THEMES
+
+1. THE AI-NATIVE TRANSFORMATION
+   • Why traditional organisations can't simply add AI tools
+   • The difference between AI-enabled and AI-born
+   • How three people can now orchestrate what once took 30,000
+   • Real-world examples of AI-native operations
+
+2. THE FIVE PLANES ARCHITECTURE
+   • Complete framework for designing AI-born organisations
+   • How Data, Models, Agents, Orchestration, and Governance layers work together
+   • Common mistakes in AI transformation
+   • How to start the journey from AI-enabled to AI-native
+
+3. REDEFINING HUMAN ROLES
+   • The New Triumvirate: Architect, Intent-Setter, Guardian
+   • What happens to middle management in AI-native organisations?
+   • Why judgement, taste, and intent become more valuable (not less)
+   • Reskilling strategies for the AI era
+
+4. COMPETITIVE ADVANTAGE IN THE AI ERA
+   • The Defensibility Stack: where moats live now
+   • Why governance and trust matter more than scale
+   • Iteration half-life and speed of adaptation
+   • How architecture becomes competitive advantage
+
+5. PRACTICAL TRANSFORMATION
+   • The Cognitive Overhead Index: diagnosing institutional drag
+   • Where to start your AI transformation journey
+   • Common pitfalls and how to avoid them
+   • Timeline expectations for AI-native transition
+
+6. GOVERNANCE AND ETHICS
+   • Trust rails for autonomous systems
+   • Who is accountable when AI agents make decisions?
+   • Ethical guardrails without stifling innovation
+   • Balancing autonomy with oversight
+
+7. THE FUTURE OF WORK
+   • Beyond labour and capital: new models of value creation
+   • Portable benefits and participation dividends
+   • Why job titles are becoming obsolete
+   • Human purpose in a post-labour economy
+
+8. ECONOMIC AND SOCIETAL IMPLICATIONS
+   • How AI-born organisations reshape markets
+   • Distribution vs. consolidation in the AI era
+   • Policy implications for regulators
+   • Long-term scenarios for AI and human flourishing
+
+---
+
+AUDIENCE-SPECIFIC ANGLES
+
+FOR BUSINESS AUDIENCES
+• C-suite strategy: When to start AI-native transformation
+• ROI and business case for AI-born architecture
+• Competitive threats from AI-native entrants
+• Change management and organisational transition
+
+FOR TECHNOLOGY AUDIENCES
+• Technical architecture patterns for AI-native systems
+• Multi-agent orchestration challenges
+• Model selection and governance
+• Infrastructure requirements
+
+FOR POLICY/ACADEMIC AUDIENCES
+• Economic implications of AI-born organisations
+• Labour market transformations
+• Regulatory frameworks for autonomous agents
+• Ethical considerations in AI governance
+
+FOR GENERAL AUDIENCES
+• What the AI transformation means for your career
+• How to prepare for AI-native work environments
+• Real-world examples anyone can understand
+• Hopeful vision vs. dystopian narratives
+
+---
+
+SAMPLE INTERVIEW QUESTIONS
+
+• "You say 'the job title is dying'—what do you mean by that?"
+
+• "Can you explain the difference between AI-enabled and AI-born?"
+
+• "What are the Five Planes, and why does every organisation need this framework?"
+
+• "How do you respond to concerns about AI replacing human workers?"
+
+• "What is the Cognitive Overhead Index, and how can companies use it?"
+
+• "You describe a 'New Triumvirate' of human roles. Can you explain?"
+
+• "Where do competitive moats live in the AI era?"
+
+• "What's the biggest mistake you see companies making with AI transformation?"
+
+• "How should leaders start their journey to AI-native?"
+
+• "What's your vision for the 'Next Economy of Being'?"
+
+---
+
+AUTHOR BIO (SHORT)
+
+Mehran Granfar is Founder & CEO of Adaptic.ai, an AI-born institutional platform fusing
+autonomous intelligence with modern finance. A systems architect and strategic futurist,
+he works where AI, governance, and economic design meet—helping organisations evolve
+from AI-enabled to AI-native.
+
+---
+
+MEDIA CONTACT
+
+Interview requests: press@ai-born.org
+Author availability: Available for podcast, radio, TV, and print interviews
+Lead time: Typically 48-72 hours
+Time zones: Flexible
+
+Press kit: https://ai-born.org/media
+Book website: https://ai-born.org
+
+---
+
+© 2025 Mic Press, LLC. All rights reserved.

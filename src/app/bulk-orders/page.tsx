@@ -1,18 +1,19 @@
-import { BookNavbar } from "@/components/BookNavbar";
+import { BookNavbarWrapper } from "@/components/BookNavbarWrapper";
+import { BookBulkOrdersWithAuth } from "@/components/sections/BookBulkOrders";
 import { BookFooter } from "@/components/sections/BookFooter";
-import { BookBulkOrders } from "@/components/sections/BookBulkOrders";
+import { pageMetadata } from "@/lib/metadata";
+import { getCurrentUser } from "@/lib/auth";
 
-export const metadata = {
-  title: "Bulk Orders — AI-Born",
-  description: "Corporate and bulk orders for AI-Born by Mehran Granfar. NYT-friendly distributed ordering guidance.",
-};
+export const metadata = pageMetadata.bulkOrders;
 
-export default function BulkOrdersPage() {
+export default async function BulkOrdersPage() {
+  const user = await getCurrentUser();
+
   return (
     <>
-      <BookNavbar />
+      <BookNavbarWrapper />
       <main className="min-h-screen bg-white pt-16 dark:bg-black">
-        <BookBulkOrders />
+        <BookBulkOrdersWithAuth user={user} />
       </main>
       <BookFooter />
     </>

@@ -1,0 +1,37 @@
+<svg width="140" height="40" viewBox="0 0 140 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Walmart Spark Symbol -->
+  <g transform="translate(8, 8)">
+    <!-- Center circle -->
+    <circle cx="12" cy="12" r="2" fill="#FFC220"/>
+
+    <!-- Top spark -->
+    <path d="M12 0 L13 7 L12 8.5 L11 7 Z" fill="#FFC220"/>
+
+    <!-- Right spark -->
+    <path d="M24 12 L17 13 L15.5 12 L17 11 Z" fill="#FFC220"/>
+
+    <!-- Bottom spark -->
+    <path d="M12 24 L13 17 L12 15.5 L11 17 Z" fill="#FFC220"/>
+
+    <!-- Left spark -->
+    <path d="M0 12 L7 13 L8.5 12 L7 11 Z" fill="#FFC220"/>
+
+    <!-- Top-right spark -->
+    <path d="M19 5 L14.5 9.5 L13.5 9 L14 8 Z" fill="#FFC220"/>
+
+    <!-- Bottom-right spark -->
+    <path d="M19 19 L14.5 14.5 L14 16 L13.5 15 Z" fill="#FFC220"/>
+
+    <!-- Bottom-left spark -->
+    <path d="M5 19 L9.5 14.5 L10.5 15 L10 16 Z" fill="#FFC220"/>
+
+    <!-- Top-left spark -->
+    <path d="M5 5 L9.5 9.5 L10 8 L10.5 9 Z" fill="#FFC220"/>
+  </g>
+
+  <!-- Walmart Text -->
+  <g>
+    <text x="36" y="24" font-family="'Bogle', Arial, sans-serif" font-size="14" font-weight="700" fill="#0071CE" letter-spacing="0.5">Walmart</text>
+    <text x="98" y="24" font-family="'Bogle', Arial, sans-serif" font-size="8" font-weight="400" fill="#0071CE">®</text>
+  </g>
+</svg>

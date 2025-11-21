@@ -1,7 +1,9 @@
 "use client";
 
 import Image from "next/image";
+
 import Marquee from "react-fast-marquee";
+
 import { cn } from "@/lib/utils";
 
 type Publication = {
@@ -81,12 +83,7 @@ export const BookAsSeenIn = () => {
                     width={publication.width}
                     height={publication.height}
                     className={cn(
-                      "h-auto w-auto object-contain",
-                      publication.name === "The Wall Street Journal" ||
-                      publication.name === "The New York Times" ||
-                      publication.name === "Sydney Morning Herald"
-                        ? "max-h-10"
-                        : "max-h-7",
+                      "h-8 w-auto object-contain",
                       publication.name === "CNN" || publication.name === "Bloomberg"
                         ? "dark:brightness-0 dark:invert"
                         : "dark:invert"
@@ -111,12 +108,7 @@ export const BookAsSeenIn = () => {
                     width={publication.width}
                     height={publication.height}
                     className={cn(
-                      "h-auto w-auto object-contain",
-                      publication.name === "The Wall Street Journal" ||
-                      publication.name === "The New York Times" ||
-                      publication.name === "Sydney Morning Herald"
-                        ? "max-h-10"
-                        : "max-h-7",
+                      "h-8 w-auto object-contain",
                       publication.name === "CNN" || publication.name === "Bloomberg"
                         ? "dark:brightness-0 dark:invert"
                         : "dark:invert"

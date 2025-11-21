@@ -1,0 +1,201 @@
+/**
+ * Example client-side error logging
+ *
+ * Demonstrates:
+ * - Client-side error boundary
+ * - API endpoint for client error logging
+ * - Error reporting hook
+ */
+
+'use client';
+
+import React, { Component, ReactNode } from 'react';
+
+// ============================================================================
+// Client Error Logging API
+// ============================================================================
+
+interface ClientError {
+  message: string;
+  stack?: string;
+  componentStack?: string;
+  url: string;
+  userAgent: string;
+  timestamp: string;
+}
+
+/**
+ * Send client error to logging API
+ */
+async function logClientError(error: ClientError): Promise<void> {
+  try {
+    await fetch('/api/log-client-error', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(error),
+    });
+  } catch (err) {
+    // Silently fail - don't want to throw errors in error handler
+    console.error('Failed to log client error:', err);
+  }
+}
+
+// ============================================================================
+// Error Boundary Component
+// ============================================================================
+
+interface ErrorBoundaryProps {
+  children: ReactNode;
+  fallback?: ReactNode;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error?: Error;
+}
+
+export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return {
+      hasError: true,
+      error,
+    };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
+    // Log error to server
+    logClientError({
+      message: error.message,
+      stack: error.stack,
+      componentStack: errorInfo.componentStack,
+      url: window.location.href,
+      userAgent: window.navigator.userAgent,
+      timestamp: new Date().toISOString(),
+    });
+
+    console.error('Error boundary caught error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback || (
+        <div className="flex min-h-screen items-center justify-center p-4">
+          <div className="rounded-2xl bg-white p-8 shadow-xl max-w-md text-center">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Something went wrong
+            </h2>
+            <p className="text-gray-600 mb-6">
+              We apologize for the inconvenience. The error has been logged and
+              we will investigate.
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-6 py-3 bg-brand-cyan text-white rounded-lg hover:bg-brand-cyan/90 transition-colors"
+            >
+              Reload page
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+// ============================================================================
+// Error Reporting Hook
+// ============================================================================
+
+/**
+ * Hook for manual error reporting from client components
+ */
+export function useErrorReporting() {
+  const reportError = React.useCallback((error: Error, context?: Record<string, unknown>) => {
+    logClientError({
+      message: error.message,
+      stack: error.stack,
+      componentStack: context ? JSON.stringify(context) : undefined,
+      url: window.location.href,
+      userAgent: window.navigator.userAgent,
+      timestamp: new Date().toISOString(),
+    });
+  }, []);
+
+  return { reportError };
+}
+
+// ============================================================================
+// Example Usage in Component
+// ============================================================================
+
+export function ExampleComponentWithErrorHandling() {
+  const { reportError } = useErrorReporting();
+
+  const handleAction = async () => {
+    try {
+      // Some risky operation
+      await fetch('/api/some-endpoint');
+    } catch (error) {
+      // Report error with context
+      if (error instanceof Error) {
+        reportError(error, {
+          action: 'handleAction',
+          component: 'ExampleComponent',
+        });
+      }
+
+      // Show user-friendly error message
+      alert('Something went wrong. Please try again.');
+    }
+  };
+
+  return (
+    <div>
+      <button onClick={handleAction}>
+        Perform Action
+      </button>
+    </div>
+  );
+}
+
+// ============================================================================
+// Global Error Handler
+// ============================================================================
+
+/**
+ * Set up global error handlers
+ * Call this in your root layout or app initialization
+ */
+export function setupGlobalErrorHandlers() {
+  // Handle unhandled promise rejections
+  if (typeof window !== 'undefined') {
+    window.addEventListener('unhandledrejection', (event) => {
+      logClientError({
+        message: `Unhandled Promise Rejection: ${event.reason}`,
+        stack: event.reason?.stack,
+        url: window.location.href,
+        userAgent: window.navigator.userAgent,
+        timestamp: new Date().toISOString(),
+      });
+    });
+
+    // Handle global errors
+    window.addEventListener('error', (event) => {
+      logClientError({
+        message: event.message,
+        stack: event.error?.stack,
+        url: window.location.href,
+        userAgent: window.navigator.userAgent,
+        timestamp: new Date().toISOString(),
+      });
+    });
+  }
+}

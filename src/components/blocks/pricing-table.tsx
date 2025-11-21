@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { Check, ChevronsUpDown, X } from "lucide-react";
+import { Check, ChevronsUpDown, X, LogIn, CheckCircle2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -10,132 +10,124 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { RetailerMenu } from "@/components/RetailerMenu";
+import { getSignInUrl } from "@/lib/auth";
+import { getFormattedPrice } from "@/lib/pricing";
+import type { BookFormat, GeoRegion } from "@/types";
 
 interface FeatureSection {
   category: string;
   features: {
     name: string;
-    free: true | false | null | string;
-    startup: true | false | null | string;
-    enterprise: true | false | null | string;
+    hardcover: true | false | null | string;
+    ebook: true | false | null | string;
+    audiobook: true | false | null | string;
   }[];
 }
 
-const pricingPlans = [
+interface BookPlan {
+  name: string;
+  format: BookFormat;
+  description: string;
+}
+
+const bookPlans: BookPlan[] = [
   {
-    name: "Free",
-    button: {
-      text: "Get started",
-      variant: "outline" as const,
-    },
+    name: "Hardcover",
+    format: "hardcover",
+    description: "Premium physical edition",
   },
   {
-    name: "Startup",
-    button: {
-      text: "Get started",
-      variant: "outline" as const,
-    },
+    name: "eBook",
+    format: "ebook",
+    description: "Instant digital access",
   },
   {
-    name: "Enterprise",
-    button: {
-      text: "Get a demo",
-      variant: "outline" as const,
-    },
+    name: "Audiobook",
+    format: "audiobook",
+    description: "Listen anywhere",
   },
 ];
 
 const comparisonFeatures: FeatureSection[] = [
   {
-    category: "Usage",
+    category: "Content",
     features: [
       {
-        name: "Members",
-        free: "Unlimited",
-        startup: "Unlimited",
-        enterprise: "Unlimited",
+        name: "Full book content",
+        hardcover: true,
+        ebook: true,
+        audiobook: true,
       },
       {
-        name: "Transactions",
-        free: "250",
-        startup: "Unlimited",
-        enterprise: "Unlimited",
+        name: "Physical copy",
+        hardcover: true,
+        ebook: false,
+        audiobook: false,
       },
       {
-        name: "Teams",
-        free: "2",
-        startup: "Unlimited",
-        enterprise: "Unlimited",
+        name: "Searchable text",
+        hardcover: null,
+        ebook: true,
+        audiobook: false,
+      },
+      {
+        name: "Portable",
+        hardcover: null,
+        ebook: true,
+        audiobook: true,
       },
     ],
   },
   {
-    category: "Features",
+    category: "Bonuses",
     features: [
       {
-        name: "Reporting",
-        free: true,
-        startup: true,
-        enterprise: true,
+        name: "Agent Charter Pack",
+        hardcover: true,
+        ebook: true,
+        audiobook: true,
       },
       {
-        name: "Analytics",
-        free: true,
-        startup: true,
-        enterprise: true,
+        name: "COI Diagnostic Tool",
+        hardcover: true,
+        ebook: true,
+        audiobook: true,
       },
       {
-        name: "Import and export",
-        free: true,
-        startup: true,
-        enterprise: true,
+        name: "Free excerpt",
+        hardcover: true,
+        ebook: true,
+        audiobook: true,
       },
       {
-        name: "Integrations",
-        free: true,
-        startup: true,
-        enterprise: true,
-      },
-      {
-        name: "Mainline AI",
-        free: null,
-        startup: true,
-        enterprise: true,
-      },
-      {
-        name: "Admin roles",
-        free: null,
-        startup: null,
-        enterprise: true,
-      },
-      {
-        name: "Audit log",
-        free: null,
-        startup: null,
-        enterprise: true,
+        name: "Launch updates",
+        hardcover: true,
+        ebook: true,
+        audiobook: true,
       },
     ],
   },
   {
-    category: "Support",
+    category: "Experience",
     features: [
       {
-        name: "Priority Support",
-        free: true,
-        startup: true,
-        enterprise: true,
+        name: "Offline access",
+        hardcover: true,
+        ebook: true,
+        audiobook: true,
       },
       {
-        name: "Account Manager",
-        free: null,
-        startup: null,
-        enterprise: true,
+        name: "Annotation support",
+        hardcover: true,
+        ebook: true,
+        audiobook: false,
       },
       {
-        name: "Uptime SLA",
-        free: null,
-        startup: null,
-        enterprise: true,
+        name: "Multi-device sync",
+        hardcover: null,
+        ebook: true,
+        audiobook: true,
       },
     ],
   },
@@ -160,8 +152,19 @@ const renderFeatureValue = (value: true | false | null | string) => {
   );
 };
 
-export const PricingTable = () => {
-  const [selectedPlan, setSelectedPlan] = useState(1); // Default to Startup plan
+interface PricingTableProps {
+  user?: {
+    id: string;
+    email: string;
+    name?: string | null;
+    hasPreordered?: boolean;
+  } | null;
+  initialGeo?: GeoRegion;
+}
+
+export const PricingTable = ({ user, initialGeo = "US" }: PricingTableProps) => {
+  const [selectedPlan, setSelectedPlan] = useState(0); // Default to Hardcover
+  const [geo] = useState<GeoRegion>(initialGeo);
 
   return (
     <section className="pb-28 lg:py-32">
@@ -169,6 +172,8 @@ export const PricingTable = () => {
         <PlanHeaders
           selectedPlan={selectedPlan}
           onPlanChange={setSelectedPlan}
+          user={user}
+          geo={geo}
         />
         <FeatureSections selectedPlan={selectedPlan} />
       </div>
@@ -179,11 +184,62 @@ export const PricingTable = () => {
 const PlanHeaders = ({
   selectedPlan,
   onPlanChange,
+  user,
+  geo,
 }: {
   selectedPlan: number;
   onPlanChange: (index: number) => void;
+  user?: {
+    id: string;
+    email: string;
+    name?: string | null;
+    hasPreordered?: boolean;
+  } | null;
+  geo: GeoRegion;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+
+  const renderCTA = (format: BookFormat) => {
+    // User has already pre-ordered
+    if (user?.hasPreordered) {
+      return (
+        <Button
+          variant="outline"
+          className="w-fit gap-2 cursor-default"
+          disabled
+        >
+          <CheckCircle2 className="size-4" />
+          Pre-ordered
+        </Button>
+      );
+    }
+
+    // User is authenticated but hasn't pre-ordered
+    if (user) {
+      return (
+        <RetailerMenu
+          triggerText="Pre-order now"
+          triggerVariant="primary"
+          initialFormat={format}
+          originSection="pricing-table"
+        />
+      );
+    }
+
+    // User is not authenticated
+    return (
+      <Button
+        variant="outline"
+        className="w-fit gap-2"
+        onClick={() => {
+          window.location.href = getSignInUrl('/');
+        }}
+      >
+        <LogIn className="size-4" />
+        Sign up to pre-order
+      </Button>
+    );
+  };
 
   return (
     <div className="">
@@ -192,22 +248,22 @@ const PlanHeaders = ({
         <Collapsible open={isOpen} onOpenChange={setIsOpen} className="">
           <div className="flex items-center justify-between border-b py-4">
             <CollapsibleTrigger className="flex items-center gap-2">
-              <h3 className="text-2xl font-semibold">
-                {pricingPlans[selectedPlan].name}
-              </h3>
+              <div className="text-left">
+                <h3 className="text-2xl font-semibold">
+                  {bookPlans[selectedPlan].name}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {getFormattedPrice(bookPlans[selectedPlan].format, geo)}
+                </p>
+              </div>
               <ChevronsUpDown
                 className={`size-5 transition-transform ${isOpen ? "rotate-180" : ""}`}
               />
             </CollapsibleTrigger>
-            <Button
-              variant={pricingPlans[selectedPlan].button.variant}
-              className="w-fit"
-            >
-              {pricingPlans[selectedPlan].button.text}
-            </Button>
+            {renderCTA(bookPlans[selectedPlan].format)}
           </div>
           <CollapsibleContent className="flex flex-col space-y-2 p-2">
-            {pricingPlans.map(
+            {bookPlans.map(
               (plan, index) =>
                 index !== selectedPlan && (
                   <Button
@@ -219,7 +275,12 @@ const PlanHeaders = ({
                       setIsOpen(false);
                     }}
                   >
-                    {plan.name}
+                    <div className="text-left w-full">
+                      <div className="font-semibold">{plan.name}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {getFormattedPrice(plan.format, geo)}
+                      </div>
+                    </div>
                   </Button>
                 ),
             )}
@@ -229,14 +290,18 @@ const PlanHeaders = ({
 
       {/* Desktop View */}
       <div className="grid grid-cols-4 gap-4 max-md:hidden">
-        <div className="col-span-1 max-md:hidden"></div>
+        <div className="col-span-1 max-md:hidden" />
 
-        {pricingPlans.map((plan, index) => (
+        {bookPlans.map((plan, index) => (
           <div key={index} className="">
-            <h3 className="mb-3 text-2xl font-semibold">{plan.name}</h3>
-            <Button variant={plan.button.variant} className="">
-              {plan.button.text}
-            </Button>
+            <h3 className="mb-2 text-2xl font-semibold">{plan.name}</h3>
+            <p className="mb-1 text-sm text-muted-foreground">
+              {plan.description}
+            </p>
+            <p className="mb-3 text-lg font-semibold">
+              {getFormattedPrice(plan.format, geo)}
+            </p>
+            {renderCTA(plan.format)}
           </div>
         ))}
       </div>
@@ -263,7 +328,7 @@ const FeatureSections = ({ selectedPlan }: { selectedPlan: number }) => (
             <div className="md:hidden">
               <div className="flex items-center gap-1 py-4 md:border-b">
                 {renderFeatureValue(
-                  [feature.free, feature.startup, feature.enterprise][
+                  [feature.hardcover, feature.ebook, feature.audiobook][
                     selectedPlan
                   ],
                 )}
@@ -271,7 +336,7 @@ const FeatureSections = ({ selectedPlan }: { selectedPlan: number }) => (
             </div>
             {/* Desktop View - All Plans */}
             <div className="hidden md:col-span-3 md:grid md:grid-cols-3 md:gap-4">
-              {[feature.free, feature.startup, feature.enterprise].map(
+              {[feature.hardcover, feature.ebook, feature.audiobook].map(
                 (value, i) => (
                   <div
                     key={i}

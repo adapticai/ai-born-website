@@ -51,6 +51,10 @@ const REQUEST_TYPES = [
 interface MediaRequestFormProps {
   /** Optional callback on successful submission */
   onSuccess?: () => void;
+  /** User email for auto-fill (if authenticated) */
+  userEmail?: string | null;
+  /** User name for auto-fill (if authenticated) */
+  userName?: string | null;
 }
 
 // ============================================================================
@@ -61,15 +65,15 @@ interface MediaRequestFormProps {
  * Media request form component for press/journalist inquiries
  * Features: Honeypot spam detection, React Hook Form, Zod validation
  */
-export function MediaRequestForm({ onSuccess }: MediaRequestFormProps) {
+export function MediaRequestForm({ onSuccess, userEmail, userName }: MediaRequestFormProps) {
   const [isSuccess, setIsSuccess] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
 
   const form = useForm<MediaRequestFormData>({
     resolver: zodResolver(mediaRequestSchema),
     defaultValues: {
-      name: '',
-      email: '',
+      name: userName || '',
+      email: userEmail || '',
       outlet: '',
       requestType: 'other',
       phone: '',
@@ -97,12 +101,12 @@ export function MediaRequestForm({ onSuccess }: MediaRequestFormProps) {
 
       // Map request type to analytics-compatible value
       const requestTypeMap: Record<string, 'galley' | 'interview' | 'review-copy' | 'speaking' | 'other'> = {
-        'galley': 'galley',
-        'interview': 'interview',
+        galley: 'galley',
+        interview: 'interview',
         'review-copy': 'review-copy',
-        'speaking': 'speaking',
-        'partnership': 'other',
-        'other': 'other',
+        speaking: 'speaking',
+        partnership: 'other',
+        other: 'other',
       };
 
       const analyticsRequestType = requestTypeMap[data.requestType] || 'other';

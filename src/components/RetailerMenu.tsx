@@ -40,7 +40,7 @@ export interface RetailerMenuProps {
   /**
    * Where the menu is being opened from (for analytics)
    */
-  originSection?: 'hero' | 'footer' | 'bonus';
+  originSection?: 'hero' | 'footer' | 'bonus' | 'header' | 'mobile-header' | 'pricing-table' | 'bonus-pack-hero' | 'bonus-pack-cta';
 
   /**
    * Custom className for the trigger button
@@ -313,14 +313,22 @@ export function RetailerMenu({
             {availableRetailers.length > 0 ? (
               <div className="grid gap-3">
                 {availableRetailers.map((retailer) => (
-                  <button
+                  <div
                     key={retailer.id}
                     onClick={() => handleRetailerClick(retailer)}
                     className={cn(
-                      'flex items-center justify-between p-4 rounded-none border border-slate-200 dark:border-slate-800 transition-all',
+                      'flex items-center justify-between p-4 rounded-none border border-slate-200 dark:border-slate-800 transition-all cursor-pointer',
                       'hover:border-black dark:hover:border-white hover:bg-slate-50 dark:hover:bg-slate-900',
                       'focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white focus:ring-offset-2'
                     )}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleRetailerClick(retailer);
+                      }
+                    }}
                   >
                     <div className="flex items-center gap-4">
                       {/* Retailer Logo Placeholder */}
@@ -350,7 +358,7 @@ export function RetailerMenu({
                       Pre-order
                       <ExternalLink className="size-3" />
                     </Button>
-                  </button>
+                  </div>
                 ))}
               </div>
             ) : (

@@ -50,7 +50,7 @@ export function AboutHero() {
         </div>
 
         <div
-          className={`relative flex flex-1 flex-col justify-center gap-3 pt-10 lg:pt-0 lg:pl-10`}
+          className="relative flex flex-1 flex-col justify-center gap-3 pt-10 lg:pt-0 lg:pl-10"
         >
           <DashedLine
             orientation="vertical"

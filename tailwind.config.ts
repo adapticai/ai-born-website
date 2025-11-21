@@ -45,6 +45,11 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // AI-Born Brand Colors
+        "brand-obsidian": "var(--brand-obsidian)",
+        "brand-cyan": "var(--brand-cyan)",
+        "brand-ember": "var(--brand-ember)",
+        "brand-porcelain": "var(--brand-porcelain)",
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -54,7 +59,7 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [require("@tailwindcss/typography")],
 };
 
 export default config;

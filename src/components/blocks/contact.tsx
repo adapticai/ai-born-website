@@ -6,6 +6,7 @@ import { Facebook, Linkedin, Twitter } from "lucide-react";
 
 import { ContactForm } from "@/components/blocks/contact-form";
 import { DashedLine } from "@/components/dashed-line";
+import { getCurrentUser } from "@/lib/auth";
 
 const contactInfo = [
   {
@@ -64,7 +65,8 @@ const contactInfo = [
   },
 ];
 
-export default function Contact() {
+export default async function Contact() {
+  const user = await getCurrentUser();
   return (
     <section className="py-28 lg:py-32 lg:pt-44">
       <div className="container max-w-2xl">
@@ -89,7 +91,7 @@ export default function Contact() {
         {/* Inquiry Form */}
         <div className="mx-auto">
           <h2 className="mb-4 text-lg font-semibold">Inquiries</h2>
-          <ContactForm />
+          <ContactForm user={user} />
         </div>
       </div>
     </section>

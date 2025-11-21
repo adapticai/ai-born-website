@@ -1,0 +1,109 @@
+AI-BORN: THE MACHINE CORE, THE HUMAN CORTEX, AND THE NEXT ECONOMY OF BEING
+
+COMPLETE CHAPTER LIST
+
+PART ONE: THE SHIFT
+The transition from AI-enabled to AI-born organisations
+
+Chapter 1: The Job Title Is Dying
+Why traditional organisational structures built around human labour can't survive the AI transformation
+
+Chapter 2: Three People, Thirty Thousand Outcomes
+How autonomous agents compress execution layers and what that means for enterprise design
+
+Chapter 3: From Tools to Teammates to Core
+The evolution of AI from productivity enhancement to institutional architecture
+
+PART TWO: THE FIVE PLANES
+A complete architecture stack for AI-native organisations
+
+Chapter 4: Plane One—Data
+Building the foundational layer: data architecture, governance, and quality for AI-native operations
+
+Chapter 5: Plane Two—Models
+Model selection, training, fine-tuning, and continuous improvement strategies
+
+Chapter 6: Plane Three—Agents
+Designing autonomous agents with clear boundaries, capabilities, and accountability
+
+Chapter 7: Plane Four—Orchestration
+Coordination patterns for multi-agent systems: handoffs, escalations, and human-in-the-loop
+
+Chapter 8: Plane Five—Governance
+Trust rails, oversight mechanisms, and ethical guardrails for AI-born institutions
+
+PART THREE: THE NEW TRIUMVIRATE
+Redefining human roles in AI-native organisations
+
+Chapter 9: The Architect
+System design, technical architecture, and the role of building institutional DNA
+
+Chapter 10: The Intent-Setter
+Strategic direction, priority setting, and defining what matters
+
+Chapter 11: The Guardian
+Ethical oversight, trust maintenance, and protecting against unintended consequences
+
+PART FOUR: DEFENSIBILITY
+Where competitive moats live in the AI era
+
+Chapter 12: Architecture as Moat
+How system design becomes competitive advantage
+
+Chapter 13: Governance as Moat
+Why trust rails and institutional legitimacy matter more than scale
+
+Chapter 14: Evolution Speed as Moat
+Iteration half-life and the advantage of rapid adaptation
+
+Chapter 15: Distribution as Moat
+Network effects, platform dynamics, and how AI-born organisations scale differently
+
+PART FIVE: TRANSITION
+Practical pathways from AI-enabled to AI-native
+
+Chapter 16: The Cognitive Overhead Index
+Measuring institutional drag and identifying transformation opportunities
+
+Chapter 17: Reskilling for the AI-Native Era
+How to prepare human talent for new roles
+
+Chapter 18: Portable Benefits and Participation Dividends
+Redesigning compensation, benefits, and ownership for distributed AI-born organisations
+
+Chapter 19: The Responsibility Stack
+Who is accountable when autonomous agents make consequential decisions?
+
+PART SIX: THE HORIZON
+What comes after AI-born?
+
+Chapter 20: The Next Economy of Being
+Beyond labour and capital: a new model for human purpose and value creation
+
+Chapter 21: A Why Worthy of the Power We Wield
+Choosing intentionality over default futures
+
+APPENDICES
+
+Appendix A: Agent Charter Template
+Appendix B: Governance Protocol Checklist
+Appendix C: Cognitive Overhead Index Worksheet
+Appendix D: Iteration Half-Life Calculator
+Appendix E: Defensibility Stack Assessment
+
+GLOSSARY
+
+SELECTED BIBLIOGRAPHY
+
+ACKNOWLEDGEMENTS
+
+INDEX
+
+---
+
+AI-BORN: THE MACHINE CORE, THE HUMAN CORTEX, AND THE NEXT ECONOMY OF BEING
+By Mehran Granfar
+Publisher: Mic Press, LLC
+Website: https://ai-born.org
+
+© 2025 Mic Press, LLC. All rights reserved.

@@ -203,7 +203,7 @@ export type MediaRequestFormData = z.infer<typeof mediaRequestSchema>;
 /**
  * Corporate/bulk order inquiry form schema
  * Used for: NYT-friendly distributed bulk orders
- * Fields: name, email, company, quantity, message
+ * Fields: name, email, company, quantity, distributionStrategy, timeline, message
  */
 export const bulkOrderSchema = z.object({
   /** Contact name */
@@ -244,7 +244,7 @@ export const bulkOrderSchema = z.object({
       message: 'Quantity must be a number',
     })
     .int('Quantity must be a whole number')
-    .min(25, 'Minimum bulk order is 25 copies')
+    .min(10, 'Minimum bulk order is 10 copies')
     .max(100000, 'Please contact us directly for orders over 100,000'),
 
   /** Preferred book format */
@@ -252,7 +252,24 @@ export const bulkOrderSchema = z.object({
     message: 'Please select a book format',
   }),
 
-  /** Desired delivery date (ISO date string) */
+  /**
+   * Distribution strategy for NYT-friendly bulk orders
+   * - single: Single retailer/location (not NYT-eligible)
+   * - regional: Multiple regional stores for distributed fulfillment
+   * - multi-store: Multiple stores/retailers across locations (NYT-eligible)
+   */
+  distributionStrategy: z.enum(['single', 'regional', 'multi-store'], {
+    message: 'Please select a distribution strategy',
+  }),
+
+  /**
+   * Timeline for order fulfillment
+   */
+  timeline: z.enum(['rush-1-week', '2-4-weeks', '1-2-months', '2-3-months', 'flexible'], {
+    message: 'Please select a timeline',
+  }),
+
+  /** Desired delivery date (ISO date string) - optional if timeline is selected */
   deliveryDate: z
     .string()
     .datetime()
@@ -273,6 +290,9 @@ export const bulkOrderSchema = z.object({
 
   /** Whether customer needs customization (bookplates, branding, etc.) */
   customization: z.boolean().optional(),
+
+  /** User ID for linking to authenticated account */
+  userId: z.string().optional(),
 
   /** Honeypot for spam prevention */
   honeypot: z.string().max(0).optional(),

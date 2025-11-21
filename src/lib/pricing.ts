@@ -2,8 +2,9 @@
  * Pricing Data & Utilities
  */
 
-import type { BookFormat, FormatPrice, GeoRegion } from '@/types';
 import { formatPrice } from './geo';
+
+import type { BookFormat, FormatPrice, GeoRegion } from '@/types';
 
 /**
  * Base prices for each format across all regions

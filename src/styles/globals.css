@@ -59,8 +59,13 @@
 
   --font-sans: var(--font-dm-sans), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 
-  /* AI-Born Brand Colors - True Monochromatic (Slate Palette) */
-  --brand-obsidian: #0a0a0f;
+  /* AI-Born Brand Colors */
+  --brand-obsidian: #0a0a0f;      /* Backgrounds, midnight ink */
+  --brand-cyan: #00d9ff;          /* Machine flowlines, primary accent */
+  --brand-ember: #ff9f40;         /* Human halo, secondary accent */
+  --brand-porcelain: #fafafa;     /* Body copy, high-contrast text */
+
+  /* Slate Palette - True Monochromatic */
   --brand-slate-50: #f8fafc;
   --brand-slate-100: #f1f5f9;
   --brand-slate-200: #e2e8f0;
@@ -71,7 +76,6 @@
   --brand-slate-700: #334155;
   --brand-slate-800: #1e293b;
   --brand-slate-900: #0f172a;
-  --brand-porcelain: #f8fafc;
   --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 

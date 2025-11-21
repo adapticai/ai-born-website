@@ -33,7 +33,7 @@ export const retailerData: Record<string, Retailer> = {
     url: 'https://bookshop.org/books/[SLUG]',
     geoAvailability: ['US', 'UK'],
     formats: ['hardcover', 'paperback'],
-    priority: 3,
+    priority: 4,
   },
   applebooks: {
     id: 'applebooks',
@@ -42,7 +42,7 @@ export const retailerData: Record<string, Retailer> = {
     url: 'https://books.apple.com/us/book/[SLUG]/[APPLE_ID]',
     geoAvailability: ['US', 'UK', 'EU', 'AU'],
     formats: ['ebook', 'audiobook'],
-    priority: 4,
+    priority: 5,
   },
   googleplay: {
     id: 'googleplay',
@@ -51,7 +51,7 @@ export const retailerData: Record<string, Retailer> = {
     url: 'https://play.google.com/store/books/details/[GOOGLE_ID]',
     geoAvailability: ['US', 'UK', 'EU', 'AU'],
     formats: ['ebook', 'audiobook'],
-    priority: 5,
+    priority: 6,
   },
   kobo: {
     id: 'kobo',
@@ -60,7 +60,34 @@ export const retailerData: Record<string, Retailer> = {
     url: 'https://www.kobo.com/us/en/ebook/[SLUG]',
     geoAvailability: ['US', 'UK', 'EU', 'AU'],
     formats: ['ebook'],
-    priority: 6,
+    priority: 7,
+  },
+  walmart: {
+    id: 'walmart',
+    name: 'Walmart',
+    logo: '/images/retailers/walmart.svg',
+    url: 'https://www.walmart.com/ip/[WALMART_ID]',
+    geoAvailability: ['US'],
+    formats: ['hardcover', 'ebook'],
+    priority: 3,
+  },
+  target: {
+    id: 'target',
+    name: 'Target',
+    logo: '/images/retailers/target.svg',
+    url: 'https://www.target.com/p/[TARGET_ID]',
+    geoAvailability: ['US'],
+    formats: ['hardcover', 'ebook'],
+    priority: 4,
+  },
+  audible: {
+    id: 'audible',
+    name: 'Audible',
+    logo: '/images/retailers/audible.svg',
+    url: 'https://www.audible.com/pd/[ASIN]',
+    geoAvailability: ['US', 'UK', 'AU'],
+    formats: ['audiobook'],
+    priority: 8,
   },
 };
 
@@ -99,6 +126,17 @@ const retailerURLTemplates: Record<string, Partial<Record<BookFormat, string>>> 
   },
   kobo: {
     ebook: 'https://www.kobo.com/us/en/ebook/ai-born',
+  },
+  walmart: {
+    hardcover: 'https://www.walmart.com/ip/[WALMART_ID_HARDCOVER]',
+    ebook: 'https://www.walmart.com/ip/[WALMART_ID_EBOOK]',
+  },
+  target: {
+    hardcover: 'https://www.target.com/p/[TARGET_ID_HARDCOVER]',
+    ebook: 'https://www.target.com/p/[TARGET_ID_EBOOK]',
+  },
+  audible: {
+    audiobook: 'https://www.audible.com/pd/[AUDIBLE_ASIN]',
   },
 };
 

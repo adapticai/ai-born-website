@@ -1,4 +1,4 @@
-import { BookNavbar } from "@/components/BookNavbar";
+import { BookNavbarWrapper } from "@/components/BookNavbarWrapper";
 import { BookAsSeenIn } from "@/components/sections/BookAsSeenIn";
 import { BookAudiences } from "@/components/sections/BookAudiences";
 import { BookDifference } from "@/components/sections/BookDifference";
@@ -11,11 +11,14 @@ import { BookOverview } from "@/components/sections/BookOverview";
 import { BookProblem } from "@/components/sections/BookProblem";
 import { BookSolution } from "@/components/sections/BookSolution";
 import { BookStakes } from "@/components/sections/BookStakes";
+import { pageMetadata } from "@/lib/metadata";
+
+export const metadata = pageMetadata.home;
 
 export default function Home() {
   return (
     <>
-      <BookNavbar />
+      <BookNavbarWrapper />
       <main className="min-h-screen bg-white dark:bg-black">
         {/* Hero & Core Value Proposition */}
         <BookHero />

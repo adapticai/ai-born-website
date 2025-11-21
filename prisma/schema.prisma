@@ -1,0 +1,690 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// AUTHENTICATION & USERS
+// ============================================================================
+
+model User {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  name          String?
+  emailVerified DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  // User preferences (flexible JSONB storage)
+  preferences   Json?
+
+  // Relations
+  entitlements  Entitlement[]
+  receipts      Receipt[]
+  bonusClaims   BonusClaim[]
+  orgMemberships OrgMember[]
+
+  @@index([email])
+  @@map("users")
+}
+
+// ============================================================================
+// VIP CODE SYSTEM
+// ============================================================================
+
+enum CodeType {
+  VIP_PREVIEW      // Early access to excerpt
+  VIP_BONUS        // Enhanced bonus pack
+  VIP_LAUNCH       // Launch event access
+  PARTNER          // Partner organization code
+  MEDIA            // Media/press access
+  INFLUENCER       // Creator/influencer code
+}
+
+enum CodeStatus {
+  ACTIVE
+  REDEEMED
+  EXPIRED
+  REVOKED
+}
+
+model Code {
+  id              String       @id @default(cuid())
+  code            String       @unique
+  type            CodeType
+  status          CodeStatus   @default(ACTIVE)
+
+  // Metadata
+  description     String?
+  maxRedemptions  Int?         // Null = unlimited
+  redemptionCount Int          @default(0)
+
+  // Validity
+  validFrom       DateTime     @default(now())
+  validUntil      DateTime?
+
+  // Tracking
+  createdBy       String?      // Admin/system identifier
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  // Relations
+  entitlements    Entitlement[]
+  orgId           String?
+  org             Org?         @relation(fields: [orgId], references: [id])
+
+  @@index([code])
+  @@index([type])
+  @@index([status])
+  @@index([validFrom, validUntil])
+  @@map("codes")
+}
+
+// ============================================================================
+// ENTITLEMENTS (USER BENEFITS)
+// ============================================================================
+
+enum EntitlementType {
+  EARLY_EXCERPT    // Free excerpt access
+  BONUS_PACK       // Agent Charter Pack
+  ENHANCED_BONUS   // VIP bonus pack (enhanced)
+  LAUNCH_EVENT     // Launch event access
+  PRIORITY_SUPPORT // Priority customer support
+  BULK_DISCOUNT    // Corporate bulk discount
+}
+
+enum EntitlementStatus {
+  PENDING
+  ACTIVE
+  FULFILLED
+  EXPIRED
+  REVOKED
+}
+
+model Entitlement {
+  id          String             @id @default(cuid())
+  userId      String
+  codeId      String?
+  type        EntitlementType
+  status      EntitlementStatus  @default(PENDING)
+
+  // Fulfillment
+  fulfilledAt DateTime?
+  expiresAt   DateTime?
+
+  // Metadata
+  metadata    Json?              // Flexible data (download URLs, event details, etc.)
+
+  // Tracking
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  // Relations
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  code        Code?              @relation(fields: [codeId], references: [id])
+
+  @@index([userId])
+  @@index([codeId])
+  @@index([type])
+  @@index([status])
+  @@index([expiresAt])
+  @@map("entitlements")
+}
+
+// ============================================================================
+// RECEIPTS (PROOF OF PURCHASE)
+// ============================================================================
+
+enum ReceiptStatus {
+  PENDING        // Uploaded, awaiting verification
+  VERIFIED       // Confirmed valid
+  REJECTED       // Invalid or fraudulent
+  DUPLICATE      // Already claimed
+}
+
+model Receipt {
+  id              String         @id @default(cuid())
+  userId          String
+
+  // Purchase details
+  retailer        String         // e.g., "Amazon", "Barnes & Noble"
+  orderNumber     String?        // Optional order ID
+  purchaseDate    DateTime?
+  format          String?        // "hardcover", "ebook", "audiobook"
+
+  // Verification
+  status          ReceiptStatus  @default(PENDING)
+  verifiedAt      DateTime?
+  verifiedBy      String?        // Admin identifier
+  rejectionReason String?
+
+  // File storage
+  fileUrl         String         // S3/R2 URL
+  fileHash        String         // SHA-256 for duplicate detection
+
+  // Tracking
+  ipAddress       String?
+  userAgent       String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bonusClaim      BonusClaim?
+
+  @@unique([fileHash])
+  @@index([userId])
+  @@index([status])
+  @@index([retailer])
+  @@index([createdAt])
+  @@map("receipts")
+}
+
+// ============================================================================
+// ORGANIZATIONS (PARTNER CODES)
+// ============================================================================
+
+enum OrgType {
+  CORPORATE      // Corporate client
+  MEDIA          // Media outlet
+  PARTNER        // Strategic partner
+  ACADEMIC       // University/institution
+  EVENT          // Event organizer
+}
+
+model Org {
+  id              String         @id @default(cuid())
+  name            String
+  type            OrgType
+
+  // Contact
+  contactEmail    String?
+  contactName     String?
+
+  // Metadata
+  domain          String?        // Email domain for auto-assignment
+  notes           String?
+
+  // Domain verification
+  domainVerificationToken String?  @unique
+  domainVerified          Boolean  @default(false)
+  domainVerifiedAt        DateTime?
+
+  // Settings
+  allowAutoJoin           Boolean  @default(false) // Auto-add users with matching email domain
+  settings                Json?    // Flexible org settings
+
+  // Tracking
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  codes           Code[]
+  bulkOrders      BulkOrder[]
+  members         OrgMember[]
+  plans           OrgPlan[]
+
+  @@index([domain])
+  @@index([type])
+  @@index([domainVerified])
+  @@map("orgs")
+}
+
+// ============================================================================
+// EMAIL CAPTURE (NEWSLETTER)
+// ============================================================================
+
+enum EmailCaptureSource {
+  HERO_EXCERPT     // Hero section "Get Free Excerpt"
+  FOOTER           // Footer newsletter signup
+  POPUP            // Exit-intent popup
+  BONUS_CLAIM      // During bonus claim flow
+  SOCIAL           // Social media campaign
+  REFERRAL         // Referral program
+  OTHER            // Other source
+}
+
+model EmailCapture {
+  id              String              @id @default(cuid())
+  email           String
+  name            String?
+  source          EmailCaptureSource  @default(OTHER)
+
+  // Consent
+  marketingConsent Boolean            @default(true)
+  doubleOptIn     Boolean             @default(false)
+  verifiedAt      DateTime?
+
+  // Tracking
+  referrer        String?
+  utmSource       String?
+  utmMedium       String?
+  utmCampaign     String?
+  ipAddress       String?
+  userAgent       String?
+  geo             String?             // e.g., "US", "UK", "EU", "AU"
+
+  // Timestamps
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@unique([email, source])
+  @@index([email])
+  @@index([source])
+  @@index([createdAt])
+  @@index([doubleOptIn, verifiedAt])
+  @@map("email_captures")
+}
+
+// ============================================================================
+// BONUS CLAIM (AGENT CHARTER PACK)
+// ============================================================================
+
+enum BonusClaimStatus {
+  PENDING        // Receipt uploaded
+  PROCESSING     // Under review
+  APPROVED       // Verified, bonus sent
+  REJECTED       // Invalid receipt
+  DELIVERED      // Bonus pack delivered
+}
+
+model BonusClaim {
+  id              String            @id @default(cuid())
+  userId          String
+  receiptId       String            @unique
+
+  // Claim details
+  status          BonusClaimStatus  @default(PENDING)
+
+  // Delivery
+  deliveryEmail   String            // May differ from user email
+  deliveredAt     DateTime?
+  deliveryTrackingId String?        // Email delivery ID
+
+  // Admin notes
+  adminNotes      String?
+  processedBy     String?           // Admin identifier
+  processedAt     DateTime?
+
+  // Timestamps
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  // Relations
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  receipt         Receipt           @relation(fields: [receiptId], references: [id])
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("bonus_claims")
+}
+
+// ============================================================================
+// MEDIA REQUESTS (PRESS INQUIRIES)
+// ============================================================================
+
+enum MediaRequestType {
+  GALLEY_REQUEST   // Request review copy
+  INTERVIEW        // Interview request
+  PRESS_KIT        // Press kit download
+  SPEAKING         // Speaking engagement
+  PODCAST          // Podcast appearance
+  OTHER            // Other media request
+}
+
+enum MediaRequestStatus {
+  NEW
+  IN_REVIEW
+  APPROVED
+  FULFILLED
+  DECLINED
+  SPAM
+}
+
+model MediaRequest {
+  id              String              @id @default(cuid())
+
+  // Contact
+  name            String
+  email           String
+  organization    String
+  title           String?
+
+  // Request details
+  type            MediaRequestType
+  status          MediaRequestStatus  @default(NEW)
+  message         String
+  deadline        DateTime?
+
+  // Response
+  responseNotes   String?
+  respondedAt     DateTime?
+  respondedBy     String?             // Admin identifier
+
+  // Tracking
+  ipAddress       String?
+  userAgent       String?
+  referrer        String?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@index([email])
+  @@index([status])
+  @@index([type])
+  @@index([createdAt])
+  @@map("media_requests")
+}
+
+// ============================================================================
+// BULK ORDERS (CORPORATE SALES)
+// ============================================================================
+
+enum BulkOrderStatus {
+  INQUIRY          // Initial inquiry
+  QUOTE_SENT       // Quote provided
+  NEGOTIATING      // In negotiation
+  CONFIRMED        // Order confirmed
+  FULFILLED        // Order completed
+  CANCELLED        // Cancelled
+}
+
+model BulkOrder {
+  id              String           @id @default(cuid())
+
+  // Contact
+  contactName     String
+  contactEmail    String
+  contactPhone    String?
+
+  // Organization
+  orgId           String?
+  orgName         String
+
+  // Order details
+  quantity        Int
+  format          String           // "hardcover", "ebook", "mixed"
+  requestedPrice  Float?
+  quotedPrice     Float?
+
+  // Distribution (NYT-friendly)
+  distributionNotes String?        // Multi-store fulfillment plan
+  preferredRetailers String?       // Comma-separated list
+
+  // Status
+  status          BulkOrderStatus  @default(INQUIRY)
+
+  // Fulfillment
+  invoiceUrl      String?
+  deliveryDate    DateTime?
+  trackingInfo    String?
+
+  // Admin
+  assignedTo      String?          // Sales rep identifier
+  internalNotes   String?
+
+  // Timestamps
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  // Relations
+  org             Org?             @relation(fields: [orgId], references: [id])
+
+  @@index([contactEmail])
+  @@index([status])
+  @@index([orgId])
+  @@index([createdAt])
+  @@map("bulk_orders")
+}
+
+// ============================================================================
+// RETAILER SELECTION (SMART ROTATION)
+// ============================================================================
+
+enum RetailerGeo {
+  US
+  UK
+  EU
+  AU
+  GLOBAL
+}
+
+model RetailerSelection {
+  id              String        @id @default(cuid())
+
+  // Retailer details
+  retailerName    String        // "Amazon", "Barnes & Noble", etc.
+  retailerSlug    String        // "amazon", "bn", etc.
+  geo             RetailerGeo   @default(US)
+
+  // URLs
+  hardcoverUrl    String?
+  ebookUrl        String?
+  audiobookUrl    String?
+
+  // Display
+  displayName     String        // User-facing name
+  logoUrl         String?
+  priority        Int           @default(0)  // Higher = shown first
+  isActive        Boolean       @default(true)
+
+  // Tracking
+  clickCount      Int           @default(0)
+  conversionCount Int           @default(0)
+
+  // NYT eligibility
+  nytEligible     Boolean       @default(true)
+
+  // Timestamps
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@unique([retailerSlug, geo])
+  @@index([geo, isActive, priority])
+  @@index([nytEligible])
+  @@map("retailer_selections")
+}
+
+// ============================================================================
+// ANALYTICS EVENTS (for GTM dataLayer)
+// ============================================================================
+
+enum AnalyticsEventType {
+  HERO_CTA_CLICK
+  RETAILER_MENU_OPEN
+  PREORDER_CLICK
+  LEAD_CAPTURE_SUBMIT
+  BONUS_CLAIM_SUBMIT
+  FRAMEWORK_CARD_OPEN
+  OVERVIEW_READ_DEPTH
+  SOCIAL_PROOF_VIEW
+  PRESSKIT_DOWNLOAD
+  MEDIA_REQUEST_SUBMIT
+  BULK_INTEREST_SUBMIT
+  FAQ_OPEN
+  NEWSLETTER_SUBSCRIBED
+  ENDORSEMENT_EXPAND
+}
+
+model AnalyticsEvent {
+  id              String              @id @default(cuid())
+
+  // Event details
+  eventType       AnalyticsEventType
+  eventName       String              // Raw event name
+
+  // Event data
+  properties      Json?               // Flexible event properties
+
+  // Session tracking
+  sessionId       String?
+  userId          String?
+
+  // Request context
+  ipAddress       String?
+  userAgent       String?
+  referrer        String?
+
+  // UTM tracking
+  utmSource       String?
+  utmMedium       String?
+  utmCampaign     String?
+  utmContent      String?
+  utmTerm         String?
+
+  // Geo
+  geo             String?
+
+  // Timestamp
+  timestamp       DateTime            @default(now())
+
+  @@index([eventType])
+  @@index([sessionId])
+  @@index([userId])
+  @@index([timestamp])
+  @@map("analytics_events")
+}
+
+// ============================================================================
+// ORGANIZATION WORKSPACE
+// ============================================================================
+
+enum OrgMemberRole {
+  OWNER          // Full control
+  ADMIN          // Can manage members and settings
+  MEMBER         // Standard member access
+  VIEWER         // Read-only access
+}
+
+enum OrgMemberStatus {
+  ACTIVE
+  INVITED        // Invitation sent, not yet accepted
+  SUSPENDED      // Temporarily suspended
+  REMOVED        // Removed from organization
+}
+
+model OrgMember {
+  id              String           @id @default(cuid())
+  orgId           String
+  userId          String
+
+  // Role & permissions
+  role            OrgMemberRole    @default(MEMBER)
+  status          OrgMemberStatus  @default(ACTIVE)
+
+  // Invitation
+  invitedBy       String?          // User ID of inviter
+  invitedAt       DateTime?
+  joinedAt        DateTime?
+
+  // Metadata
+  metadata        Json?            // Custom member metadata
+
+  // Tracking
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  // Relations
+  org             Org              @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planShares      OrgPlanShare[]   // Plans shared with this member
+
+  @@unique([orgId, userId])
+  @@index([orgId])
+  @@index([userId])
+  @@index([status])
+  @@map("org_members")
+}
+
+enum OrgPlanStatus {
+  DRAFT          // Being created
+  GENERATING     // LLM generation in progress
+  READY          // Generated and ready
+  PUBLISHED      // Published to organization
+  ARCHIVED       // Archived
+}
+
+enum OrgPlanPrivacy {
+  PUBLIC         // Visible to all org members
+  PRIVATE        // Visible only to creator
+  SHARED         // Visible to specific members
+}
+
+model OrgPlan {
+  id              String          @id @default(cuid())
+  orgId           String
+  createdBy       String          // User ID
+
+  // Plan details
+  title           String
+  description     String?
+  status          OrgPlanStatus   @default(DRAFT)
+  privacy         OrgPlanPrivacy  @default(PRIVATE)
+
+  // Content
+  content         String          // LLM-generated plan content (Markdown)
+  contentJson     Json?           // Structured plan data
+
+  // Generation metadata
+  prompt          String?         // Original prompt used
+  model           String?         // LLM model used (e.g., "claude-3-5-sonnet-20241022")
+  generationTime  Int?            // Generation time in ms
+  tokenCount      Int?            // Total tokens used
+
+  // PDF export
+  pdfUrl          String?         // S3/R2 URL for PDF version
+  pdfGeneratedAt  DateTime?
+
+  // Engagement
+  viewCount       Int             @default(0)
+  downloadCount   Int             @default(0)
+
+  // Tracking
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  publishedAt     DateTime?
+
+  // Relations
+  org             Org             @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  shares          OrgPlanShare[]
+
+  @@index([orgId])
+  @@index([createdBy])
+  @@index([status])
+  @@index([privacy])
+  @@index([createdAt])
+  @@map("org_plans")
+}
+
+model OrgPlanShare {
+  id              String          @id @default(cuid())
+  planId          String
+  memberId        String          // OrgMember ID
+  sharedBy        String          // User ID
+
+  // Permissions
+  canEdit         Boolean         @default(false)
+  canDownload     Boolean         @default(true)
+
+  // Tracking
+  viewedAt        DateTime?
+  downloadedAt    DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  // Relations
+  plan            OrgPlan         @relation(fields: [planId], references: [id], onDelete: Cascade)
+  member          OrgMember       @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, memberId])
+  @@index([planId])
+  @@index([memberId])
+  @@map("org_plan_shares")
+}

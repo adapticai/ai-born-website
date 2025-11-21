@@ -1,0 +1,90 @@
+AI-BORN: SELECTED EXCERPTS
+
+EXCERPT 1: FROM CHAPTER 1 — THE JOB TITLE IS DYING
+
+The org chart is a map of labour. Each box represents a human executing tasks, making decisions, coordinating with other boxes. It's a topology of work distribution—who does what, who reports to whom, how information flows.
+
+But what happens when the boxes don't represent humans anymore?
+
+Not because we've automated simple tasks—we've been doing that for decades. But because we've automated judgement. Autonomous agents that can learn, adapt, and make consequential decisions without constant human oversight. Agents that don't just execute predefined scripts but navigate ambiguity, prioritise competing goals, and improve their own performance over time.
+
+When three people can orchestrate what once took 30,000, the org chart doesn't compress—it dissolves. The enterprise must be redesigned from first principles. Not as a hierarchy of human labour, but as an architecture of intent, execution, and oversight where machines scale the "how" and humans define the "why."
+
+This is not a distant future. It's happening now. And most organisations are utterly unprepared.
+
+---
+
+EXCERPT 2: FROM CHAPTER 4 — PLANE ONE: DATA
+
+Data is not the foundation because it's valuable. Data is the foundation because everything else depends on it—and most organisations have built their houses on sand.
+
+An AI-born institution doesn't treat data as a byproduct of operations. It treats data as the primary substrate from which all intelligence emerges. Models learn from it. Agents act on it. Governance systems audit it. The entire architecture stands or falls based on data quality, accessibility, and governance.
+
+But here's what most organisations get wrong: they think data strategy means warehouses and pipelines. It doesn't. Data strategy means ontology—how you model the world. It means provenance—where data comes from and why you can trust it. It means timeliness—when data matters and when it's already stale.
+
+And most critically, it means governance. Who can access what? Who decides what's true? How do you handle conflicts between systems? What happens when data reveals something you wish it didn't?
+
+These aren't technical questions. They're political, ethical, and strategic questions disguised as technical ones. And if you don't answer them deliberately, they'll be answered by default—usually in ways that create fragility, risk, and eventual crisis.
+
+---
+
+EXCERPT 3: FROM CHAPTER 9 — THE ARCHITECT
+
+The Architect is not a coder. They are a system designer—someone who understands how components interact, how complexity emerges, how governance constraints shape what's possible.
+
+In an AI-born organisation, the Architect role combines what we once called CTO, Chief Data Officer, and Head of Strategy. Because in an AI-native world, system design *is* strategy. Architecture isn't a support function; it's the core competency.
+
+The Architect asks:
+• How do agents coordinate without creating bottlenecks?
+• How do we build trust rails into the system from day one?
+• How do we design for evolution—so the organisation can adapt without breaking?
+• How do we prevent emergent behaviours we don't want?
+
+These questions can't be answered by technologists alone. They require understanding of governance, incentives, ethics, and long-term organisational health. The Architect must speak the language of code *and* the language of power.
+
+This is not a middle-management role. This is a founding role. Get it wrong, and no amount of intent-setting or guardian oversight will save you.
+
+---
+
+EXCERPT 4: FROM CHAPTER 12 — ARCHITECTURE AS MOAT
+
+In the industrial era, moats were assets. Factories. Distribution networks. Brand. Things competitors couldn't easily replicate.
+
+In the AI-native era, moats are patterns. How your system is designed. How your agents coordinate. How quickly you can iterate. How well you've embedded trust into your architecture.
+
+Architecture as moat means your competitive advantage isn't what you've built—it's how you build. Not the current state of your system, but your rate of evolution. Not static capability, but dynamic adaptability.
+
+This is why scale isn't the moat it used to be. A massive organisation with rigid architecture loses to a small team with rapid iteration cycles. A hundred agents poorly coordinated lose to three agents elegantly orchestrated.
+
+The question isn't "How big are you?" The question is "How fast can you change?" And if your answer involves multi-quarter planning cycles and enterprise change management processes, you've already lost.
+
+---
+
+EXCERPT 5: FROM CHAPTER 21 — A WHY WORTHY OF THE POWER WE WIELD
+
+The machines will scale the "how." That's not a prediction—it's already happening. Autonomous agents executing, learning, adapting. Coordination layers that never sleep, never make arithmetic errors, never forget a policy update.
+
+But scaling execution isn't the same as choosing direction. A system that can do anything will, by default, do whatever it's currently optimised for—which might be profit maximisation, user engagement, or some proxy metric that seemed reasonable when you set it.
+
+The central question of the AI-born era is this: Can we choose a "why" worthy of the power we now wield?
+
+Not "can machines be aligned to human values"—that's the wrong framing. Machines will do exactly what they're designed to do. The question is whether humans can align with values at all. Whether we can be intentional enough, coherent enough, wise enough to set goals that matter.
+
+This isn't a technical problem. It's a civilisational one. And it's urgent.
+
+Because the default future—the one where we don't choose—is not dystopian AI takeover. It's something worse: AI perfectly executing goals we never really wanted, optimising for proxies we never interrogated, scaling systems that serve no one.
+
+The opportunity is to design otherwise. To build institutions where intent, judgement, and taste sit at the core. Where humans remain essential not because we're better at execution, but because we're the only ones who can ask "Should we?"
+
+This is the work. Not just building AI-born organisations, but building ones worth existing.
+
+---
+
+AI-BORN: THE MACHINE CORE, THE HUMAN CORTEX, AND THE NEXT ECONOMY OF BEING
+By Mehran Granfar
+Publisher: Mic Press, LLC
+Website: https://ai-born.org
+
+For full chapters and review copies, contact: press@ai-born.org
+
+© 2025 Mic Press, LLC. All rights reserved.

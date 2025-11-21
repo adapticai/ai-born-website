@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 import {
   bulkOrderSchema,
@@ -80,8 +80,8 @@ export async function POST(request: NextRequest) {
     // Get client IP for rate limiting
     const clientIp = getClientIp(request);
 
-    // Check rate limit
-    const rateLimitResult = checkRateLimit(
+    // Check rate limit (async with Upstash Redis)
+    const rateLimitResult = await checkRateLimit(
       `bulk-order:${clientIp}`,
       RATE_LIMIT_CONFIG
     );
@@ -167,8 +167,15 @@ export async function POST(request: NextRequest) {
       name: sanitizeText(data.name),
       email: sanitizeEmail(data.email),
       company: sanitizeText(data.company),
+      phone: data.phone ? sanitizeText(data.phone) : undefined,
       quantity: data.quantity,
+      format: data.format || "hardcover",
+      distributionStrategy: data.distributionStrategy || "single",
+      timeline: data.timeline || "flexible",
+      region: data.region || "US",
+      customization: data.customization || false,
       message: sanitizeText(data.message),
+      userId: data.userId, // Link to authenticated user account
     };
 
     // Check for suspicious content
@@ -216,12 +223,46 @@ export async function POST(request: NextRequest) {
     console.log("=".repeat(80));
     console.log(`Timestamp: ${new Date().toISOString()}`);
     console.log(`From IP: ${clientIp}`);
+    if (sanitizedData.userId) {
+      console.log(`User ID: ${sanitizedData.userId} (Authenticated)`);
+    }
     console.log(`Name: ${sanitizedData.name}`);
     console.log(`Email: ${sanitizedData.email}`);
     console.log(`Company: ${sanitizedData.company}`);
+    if (sanitizedData.phone) {
+      console.log(`Phone: ${sanitizedData.phone}`);
+    }
     console.log(`Quantity: ${sanitizedData.quantity} copies`);
     console.log(`Quantity Band: ${quantityBand}`);
+    console.log(`Format: ${sanitizedData.format}`);
+    console.log(`Distribution Strategy: ${sanitizedData.distributionStrategy}`);
+    console.log(`Timeline: ${sanitizedData.timeline}`);
+    console.log(`Region: ${sanitizedData.region}`);
+    console.log(`Customization Requested: ${sanitizedData.customization ? "Yes" : "No"}`);
     console.log(`Message:\n${sanitizedData.message}`);
+    console.log("=".repeat(80));
+    console.log("[NYT-FRIENDLY BULK ORDER GUIDANCE]");
+    if (sanitizedData.distributionStrategy === "multi-store") {
+      console.log(
+        "✓ RECOMMENDED: Multi-store distribution strategy (NYT-eligible)"
+      );
+      console.log(
+        "  → Purchase via multiple retailers/locations for distributed invoicing"
+      );
+      console.log(
+        "  → Coordinate regional store partners for multi-store fulfillment"
+      );
+    } else if (sanitizedData.distributionStrategy === "regional") {
+      console.log("⚠ REGIONAL: Regional distribution strategy");
+      console.log(
+        "  → Consider upgrading to multi-store for NYT list eligibility"
+      );
+    } else {
+      console.log("⚠ SINGLE: Single-location purchase (not NYT-eligible)");
+      console.log(
+        "  → Recommend distributed bulk orders across multiple retailers"
+      );
+    }
     console.log("=".repeat(80));
     console.log(
       "TODO: Integrate email service (SendGrid, Postmark, or Resend)"

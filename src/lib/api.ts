@@ -354,7 +354,13 @@ export async function submitBulkOrder(data: {
   name: string;
   email: string;
   company: string;
+  phone?: string;
   quantity: number;
+  format?: string;
+  distributionStrategy?: string;
+  timeline?: string;
+  region?: string;
+  customization?: boolean;
   message: string;
 }): Promise<APIResponse> {
   return post('/bulk-order', data);
@@ -368,6 +374,20 @@ export async function subscribeNewsletter(
   source?: string
 ): Promise<APIResponse> {
   return post('/newsletter-subscribe', { email, source });
+}
+
+/**
+ * Redeem VIP code
+ * Requires authentication - associates code with authenticated user
+ */
+export async function redeemVIPCode(
+  code: string,
+  retailer: string = 'direct'
+): Promise<APIResponse<{ benefits: string[]; expiresAt?: string }>> {
+  return post(`/codes/${code}/redeem`, {
+    retailer,
+    consentToTerms: true,
+  });
 }
 
 // ============================================================================

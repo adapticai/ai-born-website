@@ -44,3 +44,5 @@ next-env.d.ts
 # user-uploaded files
 /public/uploads/
 /data/bonus-claims.json
+
+/src/generated/prisma

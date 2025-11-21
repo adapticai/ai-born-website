@@ -3,7 +3,7 @@
  * Based on CLAUDE.md Section 9: Analytics & Tracking
  */
 
-import { BookFormat, GeoRegion } from './index';
+import { type BookFormat, type GeoRegion } from './index';
 
 // ==================== Base Event Structure ====================
 
@@ -45,7 +45,7 @@ export interface HeroCTAClickEvent extends BaseAnalyticsEvent {
 export interface RetailerMenuOpenEvent extends BaseAnalyticsEvent {
   event: 'retailer_menu_open';
   /** Where the menu was opened from */
-  origin_section: 'hero' | 'footer' | 'bonus';
+  origin_section: 'hero' | 'footer' | 'bonus' | 'header' | 'mobile-header' | 'pricing-table' | 'bonus-pack-hero' | 'bonus-pack-cta';
 }
 
 /**
@@ -98,12 +98,25 @@ export interface BonusClaimSubmitEvent extends BaseAnalyticsEvent {
   event: 'bonus_claim_submit';
   /** Retailer where purchase was made */
   retailer: string;
+  /** Book format (hardcover, ebook, audiobook) */
+  format?: string;
   /** Hashed order ID for privacy */
   order_id_hash: string;
   /** Whether file was uploaded */
   receipt_uploaded: boolean;
   /** Whether submission was successful */
   success?: boolean;
+}
+
+/**
+ * Triggered when user selects a file for bonus claim
+ */
+export interface BonusClaimFileSelectEvent extends BaseAnalyticsEvent {
+  event: 'bonus_claim_file_select';
+  /** File type/MIME type */
+  file_type: string;
+  /** File size in bytes */
+  file_size: number;
 }
 
 // ==================== Content Engagement Events ====================
@@ -186,6 +199,30 @@ export interface PresskitDownloadEvent extends BaseAnalyticsEvent {
   asset_type: 'synopsis' | 'press-release' | 'covers' | 'headshots' | 'full-kit';
   /** File format */
   format?: string;
+  /** Number of assets in download */
+  asset_count?: number;
+  /** Generation time in milliseconds */
+  generation_time_ms?: number;
+  /** User agent string */
+  user_agent?: string;
+  /** Whether user is authenticated */
+  authenticated?: boolean;
+  /** User email (if authenticated) */
+  user_email?: string;
+  /** User name (if authenticated) */
+  user_name?: string;
+}
+
+/**
+ * Press kit download error event
+ * Triggered when press kit download fails
+ */
+export interface PresskitDownloadErrorEvent extends BaseAnalyticsEvent {
+  event: 'presskit_download_error';
+  /** Error message */
+  error_message: string;
+  /** Error code */
+  error_code?: string;
 }
 
 /**
@@ -304,6 +341,110 @@ export interface FormatToggleEvent extends BaseAnalyticsEvent {
   to_format: BookFormat;
 }
 
+// ==================== VIP Code Redemption Events ====================
+
+/**
+ * VIP code redemption attempt event
+ * Triggered when user attempts to redeem a VIP code
+ */
+export interface VIPCodeRedeemAttemptEvent extends BaseAnalyticsEvent {
+  event: 'vip_code_redeem_attempt';
+  /** Code format (for analytics, not actual code) */
+  code_format?: 'valid' | 'invalid';
+}
+
+/**
+ * VIP code redemption success event
+ * Triggered when VIP code is successfully redeemed
+ */
+export interface VIPCodeRedeemSuccessEvent extends BaseAnalyticsEvent {
+  event: 'vip_code_redeem_success';
+  /** Benefits unlocked (optional) */
+  benefits_count?: number;
+}
+
+/**
+ * VIP code redemption failure event
+ * Triggered when VIP code redemption fails
+ */
+export interface VIPCodeRedeemFailureEvent extends BaseAnalyticsEvent {
+  event: 'vip_code_redeem_failure';
+  /** Failure reason */
+  failure_reason: 'invalid_code' | 'expired' | 'already_used' | 'server_error' | 'not_authenticated';
+}
+
+// ==================== Authentication Events ====================
+
+/**
+ * Sign in event
+ * Triggered when user attempts to sign in
+ */
+export interface SignInEvent extends BaseAnalyticsEvent {
+  event: 'sign_in';
+  /** Authentication provider */
+  provider: 'google' | 'github' | 'email' | 'credentials';
+  /** Whether sign-in was successful */
+  success: boolean;
+  /** Error message if sign-in failed (sanitized) */
+  error_message?: string;
+  /** Whether this is a new user */
+  is_new_user?: boolean;
+}
+
+/**
+ * Sign up event
+ * Triggered when user completes registration
+ */
+export interface SignUpEvent extends BaseAnalyticsEvent {
+  event: 'sign_up';
+  /** Authentication provider used for sign-up */
+  provider: 'google' | 'github' | 'email' | 'credentials';
+  /** Whether sign-up was successful */
+  success: boolean;
+}
+
+/**
+ * Sign out event
+ * Triggered when user signs out
+ */
+export interface SignOutEvent extends BaseAnalyticsEvent {
+  event: 'sign_out';
+  /** User ID (hashed for privacy) */
+  user_id?: string;
+  /** Session duration in seconds */
+  session_duration?: number;
+}
+
+/**
+ * Auth error event
+ * Triggered when authentication error occurs
+ */
+export interface AuthErrorEvent extends BaseAnalyticsEvent {
+  event: 'auth_error';
+  /** Type of authentication error */
+  error_type: 'sign_in_failed' | 'sign_up_failed' | 'session_expired' | 'invalid_credentials' | 'provider_error' | 'network_error' | 'unknown';
+  /** Page where error occurred */
+  page: string;
+  /** Error message (sanitized) */
+  error_message?: string;
+  /** Provider that caused the error */
+  provider?: 'google' | 'github' | 'email' | 'credentials';
+}
+
+/**
+ * Auth button click event
+ * Triggered when user clicks authentication button
+ */
+export interface AuthButtonClickEvent extends BaseAnalyticsEvent {
+  event: 'auth_button_click';
+  /** Button action */
+  action: 'sign_in' | 'sign_up' | 'sign_out';
+  /** Authentication provider */
+  provider: 'google' | 'github' | 'email' | 'credentials' | 'default';
+  /** Page where button was clicked */
+  page: string;
+}
+
 // ==================== Error Events ====================
 
 /**
@@ -315,7 +456,7 @@ export interface FormErrorEvent extends BaseAnalyticsEvent {
   /** Form identifier */
   form_id: string;
   /** Error type */
-  error_type: 'validation' | 'network' | 'server' | 'rate-limit';
+  error_type: 'validation' | 'network' | 'server' | 'rate-limit' | 'unknown';
   /** Error field (if applicable) */
   error_field?: string;
 }
@@ -334,6 +475,42 @@ export interface APIErrorEvent extends BaseAnalyticsEvent {
   error_message?: string;
 }
 
+// ==================== A/B Testing Events ====================
+
+/**
+ * Experiment assignment event
+ * Triggered when a user is assigned to a variant
+ */
+export interface ExperimentAssignedEvent extends BaseAnalyticsEvent {
+  event: 'experiment_assigned';
+  /** Experiment ID */
+  experiment_id: string;
+  /** Variant ID assigned to user */
+  variant_id: string;
+  /** Variant name */
+  variant_name: string;
+}
+
+/**
+ * Experiment conversion event
+ * Triggered when a user completes a conversion goal within an experiment
+ */
+export interface ExperimentConversionEvent extends BaseAnalyticsEvent {
+  event: 'experiment_conversion';
+  /** Experiment ID */
+  experiment_id: string;
+  /** Variant ID user is assigned to */
+  variant_id: string;
+  /** Variant name */
+  variant_name: string;
+  /** Name of the conversion event */
+  conversion_event: string;
+  /** Optional conversion value */
+  conversion_value?: number;
+  /** Additional conversion metadata */
+  [key: string]: unknown;
+}
+
 // ==================== Union Type for All Events ====================
 
 /**
@@ -347,6 +524,7 @@ export type AnalyticsEvent =
   | LeadCaptureSubmitEvent
   | NewsletterSubscribedEvent
   | BonusClaimSubmitEvent
+  | BonusClaimFileSelectEvent
   | FrameworkCardOpenEvent
   | OverviewReadDepthEvent
   | SocialProofViewEvent
@@ -354,6 +532,7 @@ export type AnalyticsEvent =
   | EndorsementTabChangeEvent
   | FAQOpenEvent
   | PresskitDownloadEvent
+  | PresskitDownloadErrorEvent
   | AuthorPressDownloadEvent
   | MediaRequestSubmitEvent
   | BulkInterestSubmitEvent
@@ -363,8 +542,18 @@ export type AnalyticsEvent =
   | AnchorNavigationEvent
   | RegionSwitchEvent
   | FormatToggleEvent
+  | VIPCodeRedeemAttemptEvent
+  | VIPCodeRedeemSuccessEvent
+  | VIPCodeRedeemFailureEvent
+  | SignInEvent
+  | SignUpEvent
+  | SignOutEvent
+  | AuthErrorEvent
+  | AuthButtonClickEvent
   | FormErrorEvent
-  | APIErrorEvent;
+  | APIErrorEvent
+  | ExperimentAssignedEvent
+  | ExperimentConversionEvent;
 
 // ==================== Helper Types ====================
 

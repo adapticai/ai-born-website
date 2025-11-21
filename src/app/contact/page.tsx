@@ -2,12 +2,16 @@ import React from "react";
 
 import { Background } from "@/components/background";
 import Contact from "@/components/blocks/contact";
+import { NavbarWrapper } from "@/components/blocks/navbar-wrapper";
 
 const Page = () => {
   return (
-    <Background>
-      <Contact />
-    </Background>
+    <>
+      <NavbarWrapper />
+      <Background>
+        <Contact />
+      </Background>
+    </>
   );
 };
 

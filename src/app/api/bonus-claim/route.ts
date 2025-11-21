@@ -20,7 +20,7 @@
  * - TODO: Malware scanning (ClamAV or cloud scanning service)
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 
 import { promises as fs } from 'fs';
 import path from 'path';
@@ -36,9 +36,12 @@ import {
 import {
   checkRateLimit,
   getClientIP,
+  getRateLimitHeaders,
+  fileUploadRateLimiter,
   BONUS_CLAIM_RATE_LIMIT,
-} from '@/lib/rate-limit';
+} from '@/lib/ratelimit';
 import { sanitizeString } from '@/lib/validation';
+import { sendBonusPackEmail } from '@/lib/email';
 
 /**
  * Bonus claim record structure
@@ -65,22 +68,23 @@ export async function POST(request: NextRequest) {
   try {
     // ==================== Rate Limiting ====================
     const clientIP = getClientIP(request);
-    const rateLimitResult = checkRateLimit(clientIP, BONUS_CLAIM_RATE_LIMIT);
+    const rateLimitResult = await checkRateLimit(
+      clientIP,
+      fileUploadRateLimiter,
+      BONUS_CLAIM_RATE_LIMIT
+    );
 
-    if (!rateLimitResult.allowed) {
+    if (!rateLimitResult.success) {
       return NextResponse.json(
         {
           success: false,
-          message: `Too many requests. Please try again in ${rateLimitResult.resetIn} seconds.`,
+          message: `Too many requests. Please try again in ${rateLimitResult.reset} seconds.`,
           error: 'RATE_LIMIT_EXCEEDED',
         },
         {
           status: 429,
           headers: {
-            'Retry-After': rateLimitResult.resetIn.toString(),
-            'X-RateLimit-Limit': BONUS_CLAIM_RATE_LIMIT.maxRequests.toString(),
-            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
-            'X-RateLimit-Reset': rateLimitResult.resetIn.toString(),
+            ...getRateLimitHeaders(rateLimitResult),
           },
         }
       );
@@ -223,7 +227,7 @@ export async function POST(request: NextRequest) {
     try {
       receiptPath = await saveFile(fileBuffer, uniqueFilename, uploadDir);
     } catch (saveError) {
-      // eslint-disable-next-line no-console
+       
       console.error('Error saving receipt file:', saveError);
       return NextResponse.json(
         {
@@ -255,7 +259,7 @@ export async function POST(request: NextRequest) {
     try {
       await saveClaimRecord(claimRecord);
     } catch (recordError) {
-      // eslint-disable-next-line no-console
+       
       console.error('Error saving claim record:', recordError);
       return NextResponse.json(
         {
@@ -267,9 +271,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // ==================== Send Confirmation Email ====================
-    // TODO: Integrate email service (SendGrid, Postmark, Resend, etc.)
-    // For MVP: Log to console
+    // ==================== Send Bonus Pack Email ====================
+    // Generate download URLs for bonus pack files
+    // TODO: Replace with actual presigned URLs from S3/R2 in production
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://ai-born.org';
+    const downloadUrls = {
+      fullPack: `${baseUrl}/api/bonus-pack/download/${claimRecord.id}/full`,
+      agentCharterPack: `${baseUrl}/api/bonus-pack/download/${claimRecord.id}/agent-charter`,
+      coiDiagnostic: `${baseUrl}/api/bonus-pack/download/${claimRecord.id}/coi-diagnostic`,
+      vpAgentTemplates: `${baseUrl}/api/bonus-pack/download/${claimRecord.id}/vp-agent-templates`,
+      subAgentLadders: `${baseUrl}/api/bonus-pack/download/${claimRecord.id}/sub-agent-ladders`,
+      escalationProtocols: `${baseUrl}/api/bonus-pack/download/${claimRecord.id}/escalation-protocols`,
+      implementationGuide: `${baseUrl}/api/bonus-pack/download/${claimRecord.id}/implementation-guide`,
+    };
+
+    // Send bonus pack via email
+    const emailResult = await sendBonusPackEmail(
+      claimRecord.email,
+      claimRecord.id,
+      downloadUrls
+    );
+
     /* eslint-disable no-console */
     console.log('=== BONUS CLAIM SUBMITTED ===');
     console.log('Claim ID:', claimRecord.id);
@@ -279,12 +301,20 @@ export async function POST(request: NextRequest) {
     console.log('Format:', claimRecord.format);
     console.log('Receipt Path:', claimRecord.receiptPath);
     console.log('Status:', claimRecord.status);
+    console.log('Email Sent:', emailResult.success);
+    console.log('Message ID:', emailResult.messageId || 'N/A');
     console.log('Timestamp:', claimRecord.timestamp);
     console.log('=============================');
     /* eslint-enable no-console */
 
-    // TODO: Send confirmation email to user
-    // await sendConfirmationEmail(claimRecord);
+    if (!emailResult.success) {
+      console.warn(
+        `[Bonus Claim] Email send failed for ${claimRecord.email}:`,
+        emailResult.error
+      );
+      // Note: We don't fail the claim submission if email fails
+      // Admin can manually resend bonus pack if needed
+    }
 
     // TODO: Send notification email to admin for manual verification
     // await sendAdminNotification(claimRecord);
@@ -303,13 +333,11 @@ export async function POST(request: NextRequest) {
       },
       {
         status: 200,
-        headers: {
-          'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
-        },
+        headers: getRateLimitHeaders(rateLimitResult),
       }
     );
   } catch (error: unknown) {
-    // eslint-disable-next-line no-console
+     
     console.error('Bonus claim API error:', error);
 
     return NextResponse.json(
@@ -360,7 +388,7 @@ async function saveClaimRecord(record: BonusClaimRecord): Promise<void> {
     // Write back to file with pretty formatting
     await fs.writeFile(filePath, JSON.stringify(claims, null, 2), 'utf-8');
   } catch (error: unknown) {
-    // eslint-disable-next-line no-console
+     
     console.error('Error saving claim record to file:', error);
     throw error;
   }

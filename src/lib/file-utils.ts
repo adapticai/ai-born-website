@@ -82,7 +82,7 @@ export async function validateFileType(
       extension: fileType.ext,
     };
   } catch (error: unknown) {
-    // eslint-disable-next-line no-console
+     
     console.error('File validation error:', error);
     return {
       valid: false,
@@ -146,7 +146,7 @@ export async function saveFile(
     // Return relative path (for URL)
     return path.join(uploadDir, filename);
   } catch (error: unknown) {
-    // eslint-disable-next-line no-console
+     
     console.error('Error saving file:', error);
     throw new Error('Failed to save file');
   }
@@ -162,7 +162,7 @@ export async function deleteFile(filePath: string): Promise<void> {
     const fullPath = path.join(process.cwd(), 'public', filePath);
     await fs.unlink(fullPath);
   } catch (error: unknown) {
-    // eslint-disable-next-line no-console
+     
     console.error('Error deleting file:', error);
     // Don't throw error, just log it
   }
@@ -212,4 +212,14 @@ export function validateFileSize(size: number): { valid: boolean; error?: string
 export function getFileExtension(filename: string): string {
   const ext = path.extname(filename).toLowerCase();
   return ext.startsWith('.') ? ext.substring(1) : ext;
+}
+
+/**
+ * Calculate SHA-256 hash of file buffer for deduplication
+ *
+ * @param buffer - File buffer
+ * @returns SHA-256 hash as hex string
+ */
+export function calculateFileHash(buffer: Buffer): string {
+  return crypto.createHash('sha256').update(buffer).digest('hex');
 }

@@ -154,21 +154,8 @@ export * from './analytics';
 
 export * from './forms';
 
-
 // ============================================================================
-// API Response Types
+// Re-export API Types from api.ts
 // ============================================================================
 
-export interface APIResponse<T = unknown> {
-  success: boolean;
-  message: string;
-  data?: T;
-  errors?: Record<string, string[]>;
-}
-
-export interface APIError {
-  message: string;
-  code?: string;
-  status?: number;
-  details?: unknown;
-}
+export * from './api';

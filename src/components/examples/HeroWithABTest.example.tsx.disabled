@@ -1,0 +1,256 @@
+/**
+ * Example: Hero Section with A/B Testing
+ *
+ * This example demonstrates how to implement the hero section
+ * with A/B testing for the headline variant experiment.
+ *
+ * Features demonstrated:
+ * - Using ABTest component for headline variants
+ * - Tracking conversions with useExperimentTracking
+ * - Multiple experiments on same component
+ * - Proper TypeScript types
+ */
+
+'use client';
+
+import { ABTest, ABVariant } from '@/components/ABTest';
+import { useExperiment, useExperimentTracking } from '@/hooks/useExperiment';
+import { getCTALabel } from '@/config/experiments';
+import { Button } from '@/components/ui/button';
+import { RetailerMenu } from '@/components/RetailerMenu';
+
+export function HeroWithABTest() {
+  // Get variant for CTA label experiment
+  const ctaVariant = useExperiment('cta-label');
+  const ctaLabel = getCTALabel(ctaVariant);
+
+  // Get tracking functions for hero headline experiment
+  const {
+    trackCTAClick,
+    trackPreorderClick,
+    trackRetailerMenuOpen,
+  } = useExperimentTracking('hero-headline');
+
+  const handlePreorderClick = () => {
+    trackCTAClick('preorder', { format: 'hardcover' });
+    trackRetailerMenuOpen();
+  };
+
+  const handleExcerptClick = () => {
+    trackCTAClick('excerpt');
+    // Navigate to excerpt section or open modal
+  };
+
+  const handleRetailerClick = (retailer: string) => {
+    trackPreorderClick(retailer, {
+      format: 'hardcover',
+      source: 'hero',
+    });
+  };
+
+  return (
+    <section className="relative min-h-screen bg-brand-obsidian text-brand-porcelain">
+      <div className="container mx-auto px-4 py-20">
+        <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
+          {/* Left Column - Cover & Format Toggles */}
+          <div className="flex items-center justify-center">
+            {/* 3D cover render would go here */}
+            <div className="aspect-[3/4] w-full max-w-md rounded-2xl bg-gray-800" />
+          </div>
+
+          {/* Right Column - Headline, Subhead, CTAs */}
+          <div className="flex flex-col justify-center">
+            {/* A/B Test: Hero Headline */}
+            <ABTest experiment="hero-headline" className="mb-6">
+              <ABVariant name="A">
+                <h1 className="text-5xl font-bold leading-tight lg:text-6xl">
+                  The job title is dying.
+                </h1>
+              </ABVariant>
+              <ABVariant name="B">
+                <h1 className="text-5xl font-bold leading-tight lg:text-6xl">
+                  Three people. Thirty thousand outcomes.
+                </h1>
+              </ABVariant>
+              <ABVariant name="C">
+                <h1 className="text-5xl font-bold leading-tight lg:text-6xl">
+                  From AI-enabled to AI-born.
+                </h1>
+              </ABVariant>
+            </ABTest>
+
+            {/* Subhead */}
+            <p className="mb-8 text-lg text-brand-porcelain/80 lg:text-xl">
+              A definitive blueprint for organisations designed around autonomous
+              intelligence—where machines scale the <strong>how</strong>, and humans
+              choose a <strong>why</strong> worthy of the power we wield.
+            </p>
+
+            {/* CTAs */}
+            <div className="flex flex-col gap-4 sm:flex-row">
+              {/* Primary CTA - uses CTA label experiment */}
+              <RetailerMenu
+                trigger={
+                  <Button
+                    size="lg"
+                    className="bg-brand-cyan text-brand-obsidian hover:bg-brand-cyan/90"
+                    onClick={handlePreorderClick}
+                  >
+                    {ctaLabel}
+                  </Button>
+                }
+                onRetailerClick={handleRetailerClick}
+              />
+
+              {/* Secondary CTA */}
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-brand-porcelain text-brand-porcelain hover:bg-brand-porcelain/10"
+                onClick={handleExcerptClick}
+              >
+                Get Free Excerpt
+              </Button>
+            </div>
+
+            {/* Social Proof */}
+            <div className="mt-8 text-sm text-brand-porcelain/60">
+              Join 10,000+ readers preparing for the AI-native era
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/**
+ * Usage Notes:
+ *
+ * 1. This component automatically assigns users to variants
+ * 2. Assignments persist across page reloads (90-day cookie)
+ * 3. All clicks are tracked to GTM with experiment context
+ * 4. View results in admin dashboard at /admin/experiments
+ *
+ * Testing:
+ *
+ * Force a specific variant in browser console:
+ * ```javascript
+ * import { forceVariant } from '@/lib/ab-testing';
+ * forceVariant('hero-headline', 'B', 'Scale Focus');
+ * window.location.reload();
+ * ```
+ *
+ * Clear assignments:
+ * ```javascript
+ * import { clearAllAssignments } from '@/lib/ab-testing';
+ * clearAllAssignments();
+ * window.location.reload();
+ * ```
+ */
+
+/**
+ * Alternative Implementation: Using Hooks Only
+ *
+ * If you prefer more control, use hooks instead of components:
+ */
+
+export function HeroWithHooks() {
+  // Get variants
+  const headlineVariant = useExperiment('hero-headline');
+  const ctaVariant = useExperiment('cta-label');
+
+  // Get tracking
+  const { trackCTAClick } = useExperimentTracking('hero-headline');
+
+  // Map variants to content
+  const headlines = {
+    A: 'The job title is dying.',
+    B: 'Three people. Thirty thousand outcomes.',
+    C: 'From AI-enabled to AI-born.',
+  };
+
+  const ctaLabels = {
+    A: 'Pre-order now',
+    B: 'Reserve your copy',
+  };
+
+  const headline = headlines[headlineVariant as keyof typeof headlines];
+  const ctaLabel = ctaLabels[ctaVariant as keyof typeof ctaLabels];
+
+  return (
+    <section className="hero">
+      <h1>{headline}</h1>
+      <button onClick={() => trackCTAClick('preorder')}>
+        {ctaLabel}
+      </button>
+    </section>
+  );
+}
+
+/**
+ * Conditional Rendering Example
+ *
+ * Test different layouts based on variant:
+ */
+
+export function BonusPlacementExample() {
+  const variant = useExperiment('bonus-placement');
+
+  if (variant === 'A') {
+    // Variant A: Show bonus in hero
+    return (
+      <div className="hero-with-bonus">
+        <h1>Hero Headline</h1>
+        <div className="inline-bonus">
+          <p>Pre-order bonus: Agent Charter Pack</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Variant B: Bonus in dedicated section (rendered elsewhere)
+  return (
+    <div className="hero-without-bonus">
+      <h1>Hero Headline</h1>
+    </div>
+  );
+}
+
+/**
+ * Multiple Experiments Example
+ *
+ * Track multiple experiments simultaneously:
+ */
+
+import { useMultipleExperiments } from '@/hooks/useExperiment';
+import { getHeroHeadline, getBonusPlacement } from '@/config/experiments';
+
+export function ComplexHero() {
+  const variants = useMultipleExperiments([
+    'hero-headline',
+    'cta-label',
+    'bonus-placement',
+  ]);
+
+  const headline = getHeroHeadline(variants['hero-headline']);
+  const ctaLabel = getCTALabel(variants['cta-label']);
+  const bonusPlacement = getBonusPlacement(variants['bonus-placement']);
+  const showBonusInHero = bonusPlacement === 'hero';
+
+  return (
+    <section className="hero">
+      <h1>{headline}</h1>
+      {showBonusInHero && <BonusOffer />}
+      <button>{ctaLabel}</button>
+    </section>
+  );
+}
+
+function BonusOffer() {
+  return (
+    <div className="bonus-offer">
+      <p>Pre-order bonus: Agent Charter Pack + COI Diagnostic</p>
+    </div>
+  );
+}

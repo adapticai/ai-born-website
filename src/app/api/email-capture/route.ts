@@ -7,110 +7,23 @@
  * @route POST /api/email-capture
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 
 import { z } from 'zod';
 
 import { EmailCaptureSchema, isHoneypotFilled } from '@/lib/validation';
-
-// ============================================================================
-// Rate Limiting (In-Memory)
-// ============================================================================
-
-// TODO: Move rate limiting to Redis for multi-instance support
-interface RateLimitEntry {
-  count: number;
-  resetTime: number;
-}
-
-const rateLimitMap = new Map<string, RateLimitEntry>();
-
-// Rate limit configuration
-const RATE_LIMIT_MAX_REQUESTS = 10;
-const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
-
-/**
- * Check if IP has exceeded rate limit
- */
-function checkRateLimit(ip: string): { allowed: boolean; resetTime?: number } {
-  const now = Date.now();
-  const entry = rateLimitMap.get(ip);
-
-  // Clean up expired entries periodically
-  if (Math.random() < 0.01) {
-    cleanupExpiredEntries();
-  }
-
-  if (!entry) {
-    // First request from this IP
-    rateLimitMap.set(ip, {
-      count: 1,
-      resetTime: now + RATE_LIMIT_WINDOW_MS,
-    });
-    return { allowed: true };
-  }
-
-  // Check if rate limit window has expired
-  if (now > entry.resetTime) {
-    // Reset the counter
-    rateLimitMap.set(ip, {
-      count: 1,
-      resetTime: now + RATE_LIMIT_WINDOW_MS,
-    });
-    return { allowed: true };
-  }
-
-  // Check if limit exceeded
-  if (entry.count >= RATE_LIMIT_MAX_REQUESTS) {
-    return { allowed: false, resetTime: entry.resetTime };
-  }
-
-  // Increment counter
-  entry.count += 1;
-  return { allowed: true };
-}
-
-/**
- * Clean up expired rate limit entries
- */
-function cleanupExpiredEntries() {
-  const now = Date.now();
-  for (const [ip, entry] of rateLimitMap.entries()) {
-    if (now > entry.resetTime) {
-      rateLimitMap.delete(ip);
-    }
-  }
-}
+import {
+  checkRateLimit,
+  getClientIP,
+  getRateLimitHeaders,
+  emailCaptureRateLimiter,
+  EMAIL_CAPTURE_RATE_LIMIT,
+} from '@/lib/ratelimit';
+import { sendExcerptEmail } from '@/lib/email';
 
 // ============================================================================
 // Helper Functions
 // ============================================================================
-
-/**
- * Get client IP address from request
- */
-function getClientIP(request: NextRequest): string {
-  // Try various headers for IP (in order of preference)
-  const forwardedFor = request.headers.get('x-forwarded-for');
-  const realIP = request.headers.get('x-real-ip');
-  const cfConnectingIP = request.headers.get('cf-connecting-ip');
-
-  if (forwardedFor) {
-    // x-forwarded-for can contain multiple IPs, use the first one
-    return forwardedFor.split(',')[0].trim();
-  }
-
-  if (realIP) {
-    return realIP;
-  }
-
-  if (cfConnectingIP) {
-    return cfConnectingIP;
-  }
-
-  // Fallback to a generic identifier
-  return 'unknown';
-}
 
 /**
  * Log request for debugging
@@ -223,11 +136,14 @@ export async function POST(request: NextRequest) {
       throw error;
     }
 
-    // Check rate limit
-    const rateLimit = checkRateLimit(clientIP);
-    if (!rateLimit.allowed) {
-      const resetDate = new Date(rateLimit.resetTime!);
+    // Check rate limit (Upstash Redis with in-memory fallback)
+    const rateLimit = await checkRateLimit(
+      clientIP,
+      emailCaptureRateLimiter,
+      EMAIL_CAPTURE_RATE_LIMIT
+    );
 
+    if (!rateLimit.success) {
       logRequest({
         ip: clientIP,
         email: validatedData.email,
@@ -241,26 +157,50 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          message: `Rate limit exceeded. Please try again after ${resetDate.toLocaleTimeString()}.`,
+          message: `Rate limit exceeded. Please try again in ${rateLimit.reset} seconds.`,
           errors: {
-            _form: [`Too many requests. Limit: ${RATE_LIMIT_MAX_REQUESTS} per hour.`],
+            _form: [
+              `Too many requests. Limit: ${rateLimit.limit} per hour.`,
+            ],
           },
         },
         {
           status: 429,
           headers: {
-            'Retry-After': Math.ceil((rateLimit.resetTime! - Date.now()) / 1000).toString(),
+            ...getRateLimitHeaders(rateLimit),
           },
         }
       );
     }
 
-    // TODO: Integrate SendGrid/Postmark/Resend for email delivery
-    // For MVP: Log to console and return download URL
+    // Send excerpt email via Resend
+    const emailResult = await sendExcerptEmail(validatedData.email);
 
-    // TODO: Add to mailing list service (Mailchimp/ConvertKit)
-    // For MVP: Log subscriber info
+    if (!emailResult.success) {
+      logRequest({
+        ip: clientIP,
+        email: validatedData.email,
+        name: validatedData.name,
+        source: validatedData.source,
+        timestamp,
+        success: false,
+        error: `Email send failed: ${emailResult.error}`,
+      });
 
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            'Failed to send excerpt email. Please try again or contact support.',
+          errors: {
+            _form: ['Email delivery failed. Please try again later.'],
+          },
+        },
+        { status: 500 }
+      );
+    }
+
+    // Log success
     logRequest({
       ip: clientIP,
       email: validatedData.email,
@@ -270,26 +210,15 @@ export async function POST(request: NextRequest) {
       success: true,
     });
 
-    // MVP: Return success with download URL
-    // In production, this would trigger an email with the PDF link
-    const downloadUrl = '/assets/ai-born-excerpt.pdf';
+    // TODO: Add to mailing list service (Mailchimp/ConvertKit)
+    console.log('[Email Capture] New subscriber:', {
+      email: validatedData.email,
+      name: validatedData.name || 'Not provided',
+      source: validatedData.source || 'Direct',
+      messageId: emailResult.messageId,
+    });
 
-    // eslint-disable-next-line no-console
-    console.log('--- NEW EMAIL CAPTURE ---');
-    // eslint-disable-next-line no-console
-    console.log('Email:', validatedData.email);
-    // eslint-disable-next-line no-console
-    console.log('Name:', validatedData.name || 'Not provided');
-    // eslint-disable-next-line no-console
-    console.log('Source:', validatedData.source || 'Direct');
-    // eslint-disable-next-line no-console
-    console.log('Download URL:', downloadUrl);
-    // eslint-disable-next-line no-console
-    console.log('TODO: Send email with excerpt PDF');
-    // eslint-disable-next-line no-console
-    console.log('TODO: Add to mailing list');
-    // eslint-disable-next-line no-console
-    console.log('------------------------');
+    const downloadUrl = '/assets/ai-born-excerpt.pdf';
 
     return NextResponse.json(
       {
@@ -297,12 +226,15 @@ export async function POST(request: NextRequest) {
         message: 'Thank you for subscribing! Check your email for the excerpt.',
         downloadUrl,
       },
-      { status: 200 }
+      {
+        status: 200,
+        headers: getRateLimitHeaders(rateLimit),
+      }
     );
 
   } catch (error) {
     // Log server error
-    // eslint-disable-next-line no-console
+     
     console.error('[Email Capture Error]', error);
 
     logRequest({

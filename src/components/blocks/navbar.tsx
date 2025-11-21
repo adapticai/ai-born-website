@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { ChevronRight, Github } from "lucide-react";
+import { ChevronRight, Github, LogOut, Settings, User as UserIcon } from "lucide-react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,24 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { formatUserDisplayName, getUserAvatarUrl } from "@/lib/auth";
+
+interface User {
+  id: string;
+  email?: string | null;
+  name?: string | null;
+  image?: string | null;
+}
 
 const ITEMS = [
   {
@@ -44,10 +61,29 @@ const ITEMS = [
   { label: "Contact", href: "/contact" },
 ];
 
-export const Navbar = () => {
+interface NavbarProps {
+  user?: User | null;
+}
+
+export const Navbar = ({ user }: NavbarProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const pathname = usePathname();
+
+  const getInitials = (user: User) => {
+    if (user.name) {
+      return user.name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2);
+    }
+    if (user.email) {
+      return user.email.slice(0, 2).toUpperCase();
+    }
+    return "U";
+  };
 
   return (
     <section
@@ -120,14 +156,74 @@ export const Navbar = () => {
         {/* Auth Buttons */}
         <div className="flex items-center gap-2.5">
           <ThemeToggle />
-          <Link href="/login" className="max-lg:hidden">
-            <Button variant="outline">
-              <span className="relative z-10">Login</span>
-            </Button>
-          </Link>
+
+          {user ? (
+            <>
+              {/* Desktop User Menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger className="max-lg:hidden">
+                  <Avatar className="size-8">
+                    <AvatarImage src={getUserAvatarUrl(user)} alt={formatUserDisplayName(user)} />
+                    <AvatarFallback className="bg-accent text-accent-foreground text-xs font-medium">
+                      {getInitials(user)}
+                    </AvatarFallback>
+                  </Avatar>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">
+                        {formatUserDisplayName(user)}
+                      </p>
+                      {user.email && (
+                        <p className="text-muted-foreground text-xs leading-none">
+                          {user.email}
+                        </p>
+                      )}
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/account" className="cursor-pointer">
+                      <UserIcon className="mr-2 size-4" />
+                      Account
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/settings" className="cursor-pointer">
+                      <Settings className="mr-2 size-4" />
+                      Settings
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/auth/signout" className="cursor-pointer">
+                      <LogOut className="mr-2 size-4" />
+                      Sign out
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          ) : (
+            <>
+              {/* Not Authenticated - Desktop */}
+              <Link href="/auth/signin" className="max-lg:hidden">
+                <Button variant="ghost" size="sm">
+                  <span className="relative z-10">Sign In</span>
+                </Button>
+              </Link>
+              <Link href="/auth/signup" className="max-lg:hidden">
+                <Button variant="outline" size="sm">
+                  <span className="relative z-10">Sign Up</span>
+                </Button>
+              </Link>
+            </>
+          )}
+
           <a
             href="https://github.com/shadcnblocks/mainline-nextjs-template"
-            className="text-muted-foreground hover:text-foreground transition-colors"
+            className="text-muted-foreground hover:text-foreground transition-colors max-lg:hidden"
           >
             <Github className="size-4" />
             <span className="sr-only">GitHub</span>
@@ -143,15 +239,15 @@ export const Navbar = () => {
               <span
                 aria-hidden="true"
                 className={`absolute block h-0.5 w-full rounded-full bg-current transition duration-500 ease-in-out ${isMenuOpen ? "rotate-45" : "-translate-y-1.5"}`}
-              ></span>
+               />
               <span
                 aria-hidden="true"
                 className={`absolute block h-0.5 w-full rounded-full bg-current transition duration-500 ease-in-out ${isMenuOpen ? "opacity-0" : ""}`}
-              ></span>
+               />
               <span
                 aria-hidden="true"
                 className={`absolute block h-0.5 w-full rounded-full bg-current transition duration-500 ease-in-out ${isMenuOpen ? "-rotate-45" : "translate-y-1.5"}`}
-              ></span>
+               />
             </div>
           </button>
         </div>
@@ -166,6 +262,77 @@ export const Navbar = () => {
             : "invisible -translate-y-4 opacity-0",
         )}
       >
+        {/* Mobile User Info / Auth Buttons */}
+        {user ? (
+          <div className="border-border mb-4 border-b pb-4">
+            <div className="flex items-center gap-3">
+              <Avatar className="size-10">
+                <AvatarImage src={getUserAvatarUrl(user)} alt={formatUserDisplayName(user)} />
+                <AvatarFallback className="bg-accent text-accent-foreground text-sm font-medium">
+                  {getInitials(user)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium leading-none">
+                  {formatUserDisplayName(user)}
+                </p>
+                {user.email && (
+                  <p className="text-muted-foreground text-xs leading-none">
+                    {user.email}
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="mt-4 space-y-2">
+              <Link
+                href="/account"
+                className="hover:bg-accent flex w-full items-center rounded-md px-3 py-2 text-sm transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <UserIcon className="mr-2 size-4" />
+                Account
+              </Link>
+              <Link
+                href="/settings"
+                className="hover:bg-accent flex w-full items-center rounded-md px-3 py-2 text-sm transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Settings className="mr-2 size-4" />
+                Settings
+              </Link>
+              <Link
+                href="/auth/signout"
+                className="hover:bg-accent flex w-full items-center rounded-md px-3 py-2 text-sm transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <LogOut className="mr-2 size-4" />
+                Sign out
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <div className="border-border mb-4 flex gap-2 border-b pb-4">
+            <Link
+              href="/auth/signin"
+              className="flex-1"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              <Button variant="ghost" size="sm" className="w-full">
+                Sign In
+              </Button>
+            </Link>
+            <Link
+              href="/auth/signup"
+              className="flex-1"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              <Button variant="outline" size="sm" className="w-full">
+                Sign Up
+              </Button>
+            </Link>
+          </div>
+        )}
+
         <nav className="divide-border flex flex-1 flex-col divide-y">
           {ITEMS.map((link) =>
             link.dropdownItems ? (

@@ -1,12 +1,21 @@
 import { Inter, Outfit } from "next/font/google";
-
-import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import { Footer } from "@/components/blocks/footer";
-import { Navbar } from "@/components/blocks/navbar";
+import { CookieConsent } from "@/components/CookieConsent";
+import { GTMConditional } from "@/components/GTMConditional";
 import { StyleGlideProvider } from "@/components/styleglide-provider";
 import { ThemeProvider } from "@/components/theme-provider";
+import { WebVitalsReporter } from "@/components/WebVitalsReporter";
+import { SessionProvider } from "@/components/auth/SessionProvider";
+import { AuthErrorBoundary } from "@/components/auth/AuthErrorBoundary";
+import { SessionTimeout } from "@/components/auth/SessionTimeout";
+import { Toaster } from "@/components/ui/sonner";
+
+import type { Metadata } from "next";
 import "@/styles/globals.css";
+import { defaultMetadata, siteConfig, generateBookStructuredData } from "@/lib/metadata";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -24,31 +33,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: {
-    default: "AI-Born — The Blueprint for AI-Native Organisations | Mehran Granfar",
-    template: "%s | AI-Born",
-  },
-  description:
-    "The definitive blueprint for AI-native organisations and manifesto for the human transition ahead. Part field manual, part historical reckoning, part moral call to arms.",
-  keywords: [
-    "AI-native organisations",
-    "AI architecture",
-    "autonomous agents",
-    "AI governance",
-    "enterprise AI",
-    "Mehran Granfar",
-    "AI-Born book",
-    "business AI",
-    "AI transformation",
-    "AI strategy",
-  ],
-  authors: [{ name: "Mehran Granfar" }],
-  creator: "Mehran Granfar",
-  publisher: "Mic Press, LLC.",
-  robots: {
-    index: true,
-    follow: true,
-  },
+  metadataBase: new URL(siteConfig.url),
+  ...defaultMetadata,
   icons: {
     icon: [
       { url: "/favicon/favicon.ico", sizes: "48x48" },
@@ -60,30 +46,6 @@ export const metadata: Metadata = {
     apple: [{ url: "/favicon/apple-touch-icon.png", sizes: "180x180" }],
     shortcut: [{ url: "/favicon/favicon.ico" }],
   },
-  openGraph: {
-    title: "AI-Born | Mehran Granfar",
-    description:
-      "The definitive blueprint for AI-native organisations and manifesto for the human transition ahead.",
-    siteName: "AI-Born",
-    images: [
-      {
-        url: "https://ai-born.org/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "AI-Born: The Machine Core, the Human Cortex, and the Next Economy of Being",
-      },
-    ],
-    locale: "en_US",
-    type: "book",
-    url: "https://ai-born.org",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "AI-Born | Mehran Granfar",
-    description:
-      "The definitive blueprint for AI-native organisations and manifesto for the human transition ahead.",
-    images: ["https://ai-born.org/twitter-card.jpg"],
-  },
 };
 
 export default function RootLayout({
@@ -91,6 +53,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Get GTM ID from environment variable
+  // Set NEXT_PUBLIC_GTM_ID in your .env.local file
+  const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -102,56 +68,45 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Book",
-              "name": "AI-Born: The Machine Core, the Human Cortex, and the Next Economy of Being",
-              "author": {
-                "@type": "Person",
-                "name": "Mehran Granfar",
-                "jobTitle": "Founder & CEO",
-                "affiliation": {
-                  "@type": "Organization",
-                  "name": "Adaptic.ai"
-                }
-              },
-              "workExample": [
-                {
-                  "@type": "Book",
-                  "bookFormat": "https://schema.org/Hardcover"
-                },
-                {
-                  "@type": "Book",
-                  "bookFormat": "https://schema.org/EBook"
-                }
-              ],
-              "publisher": {
-                "@type": "Organization",
-                "name": "Mic Press, LLC.",
-                "url": "https://micpress.com",
-                "legalName": "Mic Press, LLC."
-              },
-              "inLanguage": "en",
-              "genre": ["Business", "Technology", "Economics"],
-              "offers": {
-                "@type": "Offer",
-                "availability": "https://schema.org/PreOrder",
-                "priceCurrency": "USD"
-              }
-            })
+            __html: JSON.stringify(generateBookStructuredData())
           }}
         />
       </head>
       <body className={`${outfit.variable} ${inter.variable} antialiased`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <StyleGlideProvider />
-          {children}
-        </ThemeProvider>
+        <SessionProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <AuthErrorBoundary>
+              <StyleGlideProvider />
+              {children}
+
+              {/* Session Timeout Monitoring - shows warnings and handles expiration */}
+              <SessionTimeout />
+
+              {/* Toast Notifications - used by SessionTimeout and other components */}
+              <Toaster position="top-right" />
+
+              {/* Cookie Consent Banner - displays on first visit */}
+              <CookieConsent />
+
+              {/* GTM - only loads after analytics consent given */}
+              {gtmId && <GTMConditional gtmId={gtmId} />}
+
+              {/* Vercel Analytics - Web Vitals tracking */}
+              <Analytics />
+
+              {/* Vercel Speed Insights - Real User Monitoring */}
+              <SpeedInsights />
+
+              {/* Web Vitals Reporter - Custom GTM integration */}
+              <WebVitalsReporter />
+            </AuthErrorBoundary>
+          </ThemeProvider>
+        </SessionProvider>
       </body>
     </html>
   );

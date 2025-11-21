@@ -1,0 +1,255 @@
+---
+title: "The Five Planes of AI-Native Design"
+excerpt: "Most organisations bolt AI onto existing structures. AI-native design requires rebuilding from the ground up—across five distinct architectural layers."
+date: "2025-10-08"
+author:
+  name: "Mehran Granfar"
+  role: "Founder & CEO, Adaptic.ai"
+tags: ["AI-native", "Architecture", "Framework"]
+coverImage: "/images/blog/five-planes.jpg"
+hero:
+  variant: "centered-features"
+  title: "AI-native organisations require architectural thinking across five distinct layers"
+  description: "Most organisations bolt AI onto existing structures. True AI-native design means rebuilding from first principles—from data foundations to governance frameworks."
+  image:
+    src: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2944&auto=format&fit=crop"
+    alt: "Connected network visualization representing AI architecture layers"
+  features:
+    - icon: "layers"
+      title: "Five Planes"
+      description: "Data, Models, Agents, Orchestration, and Governance working in concert"
+    - icon: "zap"
+      title: "Integration"
+      description: "Each layer depends on the strength of those beneath it"
+    - icon: "shield"
+      title: "Governance First"
+      description: "Start with values and constraints, then build downward"
+    - icon: "sparkles"
+      title: "Emergent Design"
+      description: "Architecture that evolves through iteration and learning"
+---
+
+Most organisations are still treating AI as a bolt-on.
+
+They take an existing business process, identify a bottleneck, and ask: "Can AI speed this up?" Customer support? Deploy a chatbot. Data analysis? Fine-tune a model. Marketing copy? Feed prompts to GPT.
+
+This isn't wrong. It's just **insufficient**.
+
+AI-as-tool can deliver incremental gains. But AI-native organisations require something more fundamental: **architectural redesign from first principles**.
+
+I call this **The Five Planes**—distinct layers of design that must work in concert for AI-native systems to function reliably, safely, and at scale.
+
+## Why "Planes"?
+
+The term comes from user experience design, where practitioners talk about "planes of user experience"—layers from abstract (strategy) to concrete (visual design).
+
+Here, I'm adapting the concept for AI-native institutional design. Each plane has:
+- A distinct function
+- Different stakeholders
+- Unique failure modes
+- Dependencies on the planes below it
+
+You can't skip a plane. You can't design them in isolation. The system is only as strong as its weakest layer.
+
+## The Five Planes
+
+### Plane 1: Data (The Foundation)
+
+**Function:** Provide structured, clean, accessible inputs for models and agents.
+
+This sounds trivial. It's not.
+
+Most organisations have data chaos:
+- Siloed in legacy systems
+- Inconsistent schemas across departments
+- Missing provenance (where did this data come from?)
+- No clear ownership or governance
+
+When you deploy AI agents that operate autonomously, data quality goes from "nice to have" to **existential**. An agent trained on dirty data doesn't just produce bad outputs—it compounds errors at scale, faster than humans can catch them.
+
+**AI-native data requirements:**
+- **Unified schema:** Agents can't reconcile conflicting field names on the fly
+- **Provenance tracking:** Every data point must be traceable to its source
+- **Version control:** Agents need to know which data snapshot they're working from
+- **Access policies:** Agents must respect data boundaries (privacy, compliance)
+
+**Failure mode:** Garbage in, garbage out—but at 1000× speed.
+
+### Plane 2: Models (The Intelligence Layer)
+
+**Function:** Transform data into predictions, classifications, generations.
+
+This is where most people think AI starts. It's actually the second plane—because models are only as good as the data they're trained on.
+
+AI-native organisations don't just use off-the-shelf models. They **curate, fine-tune, and evolve** models as core IP.
+
+**Key decisions:**
+- **When to fine-tune vs prompt-engineer?** Fine-tuning is expensive but powerful. Prompting is fast but brittle.
+- **How to handle model drift?** Models degrade as the world changes. Who monitors? Who retrains?
+- **What's the threshold for deploying vs retraining?** At what accuracy drop do you pull a model offline?
+
+**AI-native model requirements:**
+- **Continuous evaluation:** Models must be tested against real-world distributions, not just benchmarks
+- **Fallback strategies:** When a model fails, what happens? Human handoff? Simpler heuristic?
+- **Explainability:** For high-stakes decisions, models must surface *why* they produced an output
+
+**Failure mode:** Model drift silently erodes performance until catastrophic failure.
+
+### Plane 3: Agents (The Execution Layer)
+
+**Function:** Use models to autonomously perform tasks, make decisions, and orchestrate workflows.
+
+This is where AI stops being a tool and becomes a **collaborator**—or even a **decision-maker**.
+
+Agents aren't just models. They're models **plus**:
+- Task frameworks (what can this agent do?)
+- Escalation logic (when does it hand off to a human?)
+- Memory (what has it learned from past interactions?)
+- Goals (what is it optimising for?)
+
+**Types of agents:**
+- **Reactive agents:** Respond to inputs (e.g., chatbot answering questions)
+- **Goal-oriented agents:** Work toward defined outcomes (e.g., "maximise conversion rate")
+- **Learning agents:** Improve over time based on feedback (e.g., recommendation systems)
+
+**AI-native agent requirements:**
+- **Bounded autonomy:** Agents must have clear operational limits
+- **Escalation paths:** When uncertainty exceeds a threshold, hand off to humans
+- **Interoperability:** Agents must coordinate with other agents (not just humans)
+
+**Failure mode:** Agents optimise for the wrong metric, producing outcomes that are efficient but misaligned.
+
+### Plane 4: Orchestration (The Coordination Layer)
+
+**Function:** Coordinate multiple agents, manage dependencies, ensure system-wide coherence.
+
+One agent is a tool. Ten agents is a team. A hundred agents is an organisation—and organisations need **structure**.
+
+Orchestration is where you define:
+- **Who does what?** Division of labour among agents
+- **Who decides what?** Which agents can make autonomous calls, which need approval
+- **How do conflicts get resolved?** When two agents produce contradictory recommendations, what's the tiebreaker?
+
+**Orchestration patterns:**
+- **Sequential:** Agent A completes, hands off to Agent B
+- **Parallel:** Multiple agents work simultaneously, results merge later
+- **Hierarchical:** Parent agent delegates tasks to sub-agents
+- **Market-based:** Agents "bid" for tasks based on capability and load
+
+**AI-native orchestration requirements:**
+- **Task routing:** Intelligent assignment of work to the right agent
+- **State management:** Shared context across agents (no information siloes)
+- **Deadlock prevention:** Ensure agents can't get stuck waiting on each other
+
+**Failure mode:** Coordination overhead explodes, agents block each other, system grinds to a halt.
+
+### Plane 5: Governance (The Control Layer)
+
+**Function:** Ensure the system operates according to human values, legal constraints, and organisational intent.
+
+This is the most critical—and most neglected—plane.
+
+You can have perfect data, powerful models, capable agents, and elegant orchestration, and *still* produce outcomes that are:
+- Legal but unethical
+- Efficient but dehumanising
+- Profitable but misaligned with stated values
+
+Governance is where you encode:
+- **What values constrain optimisation?** (e.g., "Never sacrifice customer privacy for conversion")
+- **What human oversight is non-negotiable?** (e.g., "Hiring decisions must involve a human")
+- **How do we detect and correct drift?** (e.g., "Weekly audits of agent decisions by domain experts")
+
+**AI-native governance requirements:**
+- **Override mechanisms:** Humans can intervene at any level of the system
+- **Transparency:** Decisions must be auditable (who made this call, based on what data?)
+- **Value alignment:** Agents must be tested for alignment with organisational principles, not just performance
+
+**Failure mode:** The system works perfectly—and produces catastrophic harm at scale.
+
+## Why All Five Planes?
+
+You can't build an AI-native organisation by optimising just one layer.
+
+**Skip Data?** Your agents will hallucinate, fail silently, or produce inconsistent results.
+
+**Skip Models?** You'll have great infrastructure for mediocre intelligence.
+
+**Skip Agents?** You'll have smart models that require constant human babysitting.
+
+**Skip Orchestration?** Your agents will clash, duplicate work, or leave gaps uncovered.
+
+**Skip Governance?** You'll build something powerful and dangerous—a system optimised for outcomes you didn't intend.
+
+## The Integration Challenge
+
+The hardest part isn't designing each plane. It's making them work together.
+
+**Example: A financial services AI-native org**
+
+- **Data Plane:** Clean, real-time transaction data with provenance
+- **Model Plane:** Fraud detection models, credit risk scoring
+- **Agent Plane:** Autonomous loan approval agents, customer support agents
+- **Orchestration Plane:** Routing loan applications to appropriate agents, escalating edge cases
+- **Governance Plane:** Human override for loans over $50k, explainability for all rejections, bias audits quarterly
+
+If *any* plane fails, the whole system degrades:
+- Bad data → agents make bad calls
+- Weak models → agents can't act confidently
+- Poor orchestration → agents duplicate work or drop tasks
+- Weak governance → agents optimise into regulatory violations
+
+## Building the Planes
+
+So how do you actually design this?
+
+**Start at the top (Governance), work down.**
+
+Most orgs do the opposite—they start with data and models, then bolt on governance as an afterthought.
+
+But if you start with governance, you get clarity on:
+- What outcomes matter? (informs orchestration)
+- What decisions need human judgement? (informs agent design)
+- What metrics can't be gamed? (informs model selection)
+- What data must be protected? (informs data architecture)
+
+**Iterate in full-stack slices.**
+
+Don't build all of Data Plane, then all of Model Plane, etc. Instead:
+- Pick one use case (e.g., customer support)
+- Build a thin slice through all five planes (data → model → agent → orchestration → governance)
+- Deploy, learn, iterate
+- Expand to adjacent use cases
+
+This gives you working systems faster and surfaces integration issues early.
+
+## The Human Role in Each Plane
+
+Notice: humans are essential at every layer.
+
+- **Data Plane:** Humans curate schemas, define provenance rules, audit quality
+- **Model Plane:** Humans choose models, define thresholds, monitor drift
+- **Agent Plane:** Humans design task boundaries, set escalation rules
+- **Orchestration Plane:** Humans define coordination logic, resolve conflicts
+- **Governance Plane:** Humans set values, override decisions, adjudicate edge cases
+
+AI-native doesn't mean **human-free**. It means **human-essential**—but for judgement, not execution.
+
+<PullQuote variant="centered" author="Mehran Granfar" role="Author" company="AI-Born">
+AI-native organisations require architectural thinking across distinct, interdependent layers. You can't skip a plane. The system is only as strong as its weakest layer.
+</PullQuote>
+
+## The Path Forward
+
+The Five Planes is a framework, not a prescription.
+
+Your planes might look different depending on your domain, your scale, your risk tolerance.
+
+But the principle holds: **AI-native organisations require architectural thinking across distinct, interdependent layers.**
+
+Bolt-on AI? You can muddle through with ad-hoc solutions.
+
+AI-native? You need the full stack.
+
+---
+
+*This is an excerpt from themes explored in **AI-Born: The Machine Core, the Human Cortex, and the Next Economy of Being**. [Pre-order the book](/)*

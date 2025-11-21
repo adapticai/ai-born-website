@@ -1,0 +1,16 @@
+# Add these lines to your .gitignore file
+
+# Test coverage reports
+coverage/
+*.lcov
+
+# Vitest
+.vitest/
+
+# Playwright
+playwright-report/
+test-results/
+playwright/.cache/
+
+# Test artifacts
+*.test-results/

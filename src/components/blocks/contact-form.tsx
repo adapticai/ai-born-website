@@ -3,8 +3,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Check } from "lucide-react";
 import { motion } from "motion/react";
 import { useAction } from "next-safe-action/hooks";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import * as z from "zod";
+
 
 import { serverAction } from "@/actions/server-action";
 import { Button } from "@/components/ui/button";
@@ -28,20 +29,36 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { formSchema } from "@/lib/form-schema";
 
+import type * as z from "zod";
+
 type Schema = z.infer<typeof formSchema>;
 
-export function ContactForm() {
+interface ContactFormProps {
+  user?: {
+    name?: string | null;
+    email?: string | null;
+  } | null;
+}
+
+export function ContactForm({ user }: ContactFormProps = {}) {
+  const [isClient, setIsClient] = useState(false);
+
   const form = useForm<Schema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      email: "",
+      name: user?.name || "",
+      email: user?.email || "",
       company: "",
       employees: "",
       message: "",
       agree: false,
     } as unknown as Schema,
   });
+
+  // Handle hydration mismatch by only showing auth-related UI after mount
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
   const formAction = useAction(serverAction, {
     onSuccess: () => {
       // TODO: show success message
@@ -95,6 +112,11 @@ export function ContactForm() {
         onSubmit={handleSubmit}
         className="flex w-full flex-col gap-2 space-y-4 rounded-md"
       >
+        {isClient && user && (
+          <div className="mb-2 rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">
+            Signed in as <span className="font-medium text-foreground">{user.email}</span>
+          </div>
+        )}
         <FormField
           control={form.control}
           name="name"
@@ -111,9 +133,14 @@ export function ContactForm() {
                     field.onChange(val);
                   }}
                   placeholder="First and last name"
+                  disabled={!!user?.name}
                 />
               </FormControl>
-
+              {user?.name && (
+                <p className="text-xs text-muted-foreground">
+                  Using authenticated name
+                </p>
+              )}
               <FormMessage />
             </FormItem>
           )}
@@ -134,9 +161,14 @@ export function ContactForm() {
                     field.onChange(val);
                   }}
                   placeholder="me@company.com"
+                  disabled={!!user?.email}
                 />
               </FormControl>
-
+              {user?.email && (
+                <p className="text-xs text-muted-foreground">
+                  Using authenticated email
+                </p>
+              )}
               <FormMessage />
             </FormItem>
           )}

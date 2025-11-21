@@ -1,0 +1,6 @@
+# Prisma
+*.db
+*.db-journal
+
+# Migration lock file (commit this in production)
+# migrations/**/migration.sql should be committed

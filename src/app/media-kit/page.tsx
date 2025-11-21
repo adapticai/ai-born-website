@@ -1,11 +1,12 @@
-import { BookNavbar } from "@/components/BookNavbar";
-import { BookFooter } from "@/components/sections/BookFooter";
 import { Download, FileText, Image as ImageIcon, Users } from "lucide-react";
 
-export const metadata = {
-  title: "Media Kit — AI-Born",
-  description: "Press materials, author bio, book assets, and media contact information for AI-Born by Mehran Granfar.",
-};
+import { BookNavbarWrapper } from "@/components/BookNavbarWrapper";
+import { BookFooter } from "@/components/sections/BookFooter";
+import { pageMetadata } from "@/lib/metadata";
+import { getCurrentUser } from "@/lib/auth";
+import { PressKitDownloadButton } from "@/components/PressKitDownloadButton";
+
+export const metadata = pageMetadata.mediaKit;
 
 const pressKitAssets = [
   {
@@ -46,10 +47,13 @@ const pressKitAssets = [
   },
 ];
 
-export default function MediaKitPage() {
+export default async function MediaKitPage() {
+  // Get current user for auto-fill and tracking
+  const user = await getCurrentUser();
+
   return (
     <>
-      <BookNavbar />
+      <BookNavbarWrapper />
       <main className="min-h-screen bg-white pt-24 dark:bg-black">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="max-w-5xl mx-auto">
@@ -65,10 +69,15 @@ export default function MediaKitPage() {
 
             {/* Quick Actions */}
             <div className="mb-20 flex flex-col sm:flex-row gap-4">
-              <button className="px-8 py-4 bg-black dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-slate-200 font-outfit font-semibold tracking-tight transition-colors rounded-none">
-                <Download className="w-5 h-5 inline mr-2" />
-                Download Complete Press Kit
-              </button>
+              <PressKitDownloadButton
+                variant="default"
+                size="lg"
+                label="Download Complete Press Kit"
+                className="px-8 py-4 bg-black dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-slate-200 font-outfit font-semibold tracking-tight transition-colors rounded-none"
+                showIcon={true}
+                userEmail={user?.email}
+                userName={user?.name}
+              />
               <a
                 href="mailto:press@micpress.com"
                 className="px-8 py-4 border-2 border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black font-outfit font-semibold tracking-tight transition-colors rounded-none text-center"

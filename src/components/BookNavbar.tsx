@@ -1,21 +1,31 @@
 "use client";
 
 import { useState } from "react";
+
 import Link from "next/link";
+
 import { Menu, X } from "lucide-react";
 
 import { RetailerMenu } from "@/components/RetailerMenu";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { UserMenu } from "@/components/auth/UserMenu";
+import { CompactAuthButtons } from "@/components/auth/AuthButtons";
+import type { UserWithEntitlements } from "@/types/auth";
 
 const navigation = [
   { name: "Overview", href: "/" },
   { name: "Frameworks", href: "#frameworks" },
   { name: "For Who", href: "#audiences" },
   { name: "Author", href: "#author" },
+  { name: "Thought Pieces", href: "/blog" },
   { name: "Media Kit", href: "/media-kit" },
 ];
 
-export function BookNavbar() {
+interface BookNavbarClientProps {
+  user: UserWithEntitlements | null;
+}
+
+export function BookNavbar({ user }: BookNavbarClientProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -48,6 +58,12 @@ export function BookNavbar() {
               className="text-sm px-6 py-2 bg-black dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-slate-100 font-outfit font-semibold tracking-tight transition-colors rounded-none"
             />
             <ThemeToggle />
+            <div className="h-6 w-px bg-slate-200 dark:bg-slate-800" />
+            {user ? (
+              <UserMenu user={user} />
+            ) : (
+              <CompactAuthButtons className="font-outfit" />
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -91,6 +107,26 @@ export function BookNavbar() {
                 {item.name}
               </Link>
             ))}
+            {/* Mobile Auth Section */}
+            <div className="pt-4 mt-4 border-t border-slate-200 dark:border-slate-800">
+              {user ? (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <UserMenu user={user} />
+                    <div className="flex flex-col">
+                      <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                        {user.name || "Account"}
+                      </span>
+                      <span className="text-xs text-slate-600 dark:text-slate-400">
+                        {user.email}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <CompactAuthButtons className="font-outfit w-full" />
+              )}
+            </div>
           </div>
         </div>
       )}
